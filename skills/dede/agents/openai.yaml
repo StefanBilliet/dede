@@ -1,0 +1,4 @@
+interface:
+  display_name: "dede"
+  short_description: "Run dede on a .NET workspace."
+  default_prompt: "Use $dede to scan this workspace, export a graph, run impact queries, or serve the explorer UI."

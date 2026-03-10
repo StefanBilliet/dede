@@ -1,0 +1,8 @@
+# Default dede exclusions for this workspace.
+# Edit this file to widen or narrow the scan scope.
+
+tools
+samples
+platform/aspnetcore
+platform/runtime/src/tests
+services/food-delivery-microservices

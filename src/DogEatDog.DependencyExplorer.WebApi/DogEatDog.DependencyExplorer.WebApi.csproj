@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Core\DogEatDog.DependencyExplorer.Core.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Graph\DogEatDog.DependencyExplorer.Graph.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Roslyn\DogEatDog.DependencyExplorer.Roslyn.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.AspNet\DogEatDog.DependencyExplorer.AspNet.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.HttpDiscovery\DogEatDog.DependencyExplorer.HttpDiscovery.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.EFCore\DogEatDog.DependencyExplorer.EFCore.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Export\DogEatDog.DependencyExplorer.Export.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.WebUi\DogEatDog.DependencyExplorer.WebUi.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,6 @@
+@DogEatDog.DependencyExplorer.WebApi_HostAddress = http://localhost:5085
+
+GET {{DogEatDog.DependencyExplorer.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

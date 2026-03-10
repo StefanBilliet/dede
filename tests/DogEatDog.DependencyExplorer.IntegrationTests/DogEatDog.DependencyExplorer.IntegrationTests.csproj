@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.Core\DogEatDog.DependencyExplorer.Core.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.Graph\DogEatDog.DependencyExplorer.Graph.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.Roslyn\DogEatDog.DependencyExplorer.Roslyn.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.AspNet\DogEatDog.DependencyExplorer.AspNet.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.HttpDiscovery\DogEatDog.DependencyExplorer.HttpDiscovery.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.EFCore\DogEatDog.DependencyExplorer.EFCore.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.Export\DogEatDog.DependencyExplorer.Export.csproj" />
+    <ProjectReference Include="..\..\src\DogEatDog.DependencyExplorer.WebApi\DogEatDog.DependencyExplorer.WebApi.csproj" />
+  </ItemGroup>
+
+</Project>

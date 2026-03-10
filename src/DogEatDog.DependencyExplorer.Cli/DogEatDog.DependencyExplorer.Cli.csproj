@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.WebApi\DogEatDog.DependencyExplorer.WebApi.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Core\DogEatDog.DependencyExplorer.Core.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Graph\DogEatDog.DependencyExplorer.Graph.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Roslyn\DogEatDog.DependencyExplorer.Roslyn.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.AspNet\DogEatDog.DependencyExplorer.AspNet.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.HttpDiscovery\DogEatDog.DependencyExplorer.HttpDiscovery.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.EFCore\DogEatDog.DependencyExplorer.EFCore.csproj" />
+    <ProjectReference Include="..\DogEatDog.DependencyExplorer.Export\DogEatDog.DependencyExplorer.Export.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>dede</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+</Project>

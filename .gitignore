@@ -1,0 +1,33 @@
+# Build output
+**/bin/
+**/obj/
+artifacts/
+
+# IDE and OS files
+.vs/
+.DS_Store
+*.user
+*.suo
+
+# Generated scan output
+graph.json
+ambiguous.txt
+neo4j/
+
+# Local agent/tooling metadata
+.agents/
+.claude/
+.opencode/
+.github/skills/
+.github/copilot-instructions.md
+skills/*
+!skills/dede/
+!skills/dede/**
+
+# Workspace-only scan targets that are not part of the dede repo
+data/
+libraries/
+platform/
+samples/
+services/
+tools/

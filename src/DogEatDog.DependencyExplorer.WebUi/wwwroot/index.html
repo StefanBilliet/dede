@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dede</title>
+  <link rel="stylesheet" href="/_content/DogEatDog.DependencyExplorer.WebUi/app.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">DogEatDog.DependencyExplorer</p>
+        <h1>dede</h1>
+        <p class="subtitle">Static dependency and blast-radius explorer for mixed-repo .NET workspaces.</p>
+      </div>
+      <div class="scan-box">
+        <label for="rootPath">Workspace root</label>
+        <div class="scan-actions">
+          <input id="rootPath" type="text" placeholder="/path/to/workspace">
+          <button id="scanButton">Scan</button>
+        </div>
+        <p id="scanStatus">No graph loaded.</p>
+      </div>
+    </header>
+
+    <section id="summaryTiles" class="tiles"></section>
+
+    <section class="workspace">
+      <aside class="control-panel">
+        <div class="panel-block">
+          <h2>Views</h2>
+          <div id="viewButtons" class="button-grid"></div>
+        </div>
+
+        <div class="panel-block">
+          <h2>Focus</h2>
+          <input id="searchInput" type="search" placeholder="endpoint, class, method, table, service">
+          <div class="inline-controls">
+            <button id="downstreamButton">Downstream</button>
+            <button id="upstreamButton">Upstream</button>
+          </div>
+          <div class="inline-controls">
+            <label><input id="exactOnlyToggle" type="checkbox"> Exact only</label>
+            <label><input id="ambiguousToggle" type="checkbox" checked> Show ambiguous</label>
+          </div>
+          <label for="depthInput">Depth</label>
+          <input id="depthInput" type="number" min="1" max="10" value="4">
+        </div>
+
+        <div class="panel-block">
+          <h2>Filters</h2>
+          <label for="repoFilter">Repo</label>
+          <select id="repoFilter"></select>
+          <label for="projectFilter">Project</label>
+          <select id="projectFilter"></select>
+          <label for="nodeTypeFilter">Node type</label>
+          <select id="nodeTypeFilter"></select>
+          <label for="edgeTypeFilter">Edge type</label>
+          <select id="edgeTypeFilter"></select>
+        </div>
+
+        <div class="panel-block">
+          <h2>Path Inspector</h2>
+          <input id="pathFrom" type="text" placeholder="from node">
+          <input id="pathTo" type="text" placeholder="to node">
+          <button id="pathButton">Find paths</button>
+          <div id="pathResults" class="result-list"></div>
+        </div>
+
+        <div class="panel-block">
+          <h2>Demo Presets</h2>
+          <div id="presetList" class="preset-list"></div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <div class="canvas-wrap">
+          <svg id="graphCanvas" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <section id="auditPanel" class="audit-panel"></section>
+      </main>
+
+      <aside class="detail-panel">
+        <h2>Node Metadata</h2>
+        <div id="nodeDetails">Select a node to inspect metadata and blast radius context.</div>
+      </aside>
+    </section>
+  </div>
+
+  <script src="/_content/DogEatDog.DependencyExplorer.WebUi/app.js"></script>
+</body>
+</html>

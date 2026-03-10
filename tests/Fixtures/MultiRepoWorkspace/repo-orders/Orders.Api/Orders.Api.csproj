@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Orders.Framework\Orders.Framework.csproj" />
+    <ProjectReference Include="..\Orders.Core\Orders.Core.csproj" />
+    <ProjectReference Include="..\Orders.Data\Orders.Data.csproj" />
+  </ItemGroup>
+</Project>
