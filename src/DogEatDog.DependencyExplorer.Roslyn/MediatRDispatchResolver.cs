@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DogEatDog.DependencyExplorer.Roslyn;
 
-internal static class MediatRSendDispatchResolver
+internal static class MediatRDispatchResolver
 {
-    public static MediatRSendDispatchResolution? TryResolve(
+    public static MediatRDispatchResolution? TryResolve(
         InvocationExpressionSyntax invocation,
         SemanticModel semanticModel,
         IMethodSymbol invokedMethod,
@@ -39,7 +39,7 @@ internal static class MediatRSendDispatchResolver
         var methodDisplay = invokedMethod.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         var requestDisplay = requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
 
-        return new MediatRSendDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, dispatchKind.Value, handlers);
+        return new MediatRDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, dispatchKind.Value, handlers);
     }
 
     private static MediatRDispatchKind? GetDispatchKind(IMethodSymbol methodSymbol)
@@ -118,7 +118,7 @@ internal static class MediatRSendDispatchResolver
         && symbol.TypeKind is not (TypeKind.Interface or TypeKind.TypeParameter or TypeKind.Error);
 }
 
-internal sealed record MediatRSendDispatchResolution(
+internal sealed record MediatRDispatchResolution(
     INamedTypeSymbol RequestTypeSymbol,
     string RequestTypeId,
     string RequestTypeDisplayName,

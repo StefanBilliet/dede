@@ -18,7 +18,7 @@ internal static class MediatRDispatchEdgeContributor
         InvocationExpressionSyntax invocation,
         CancellationToken cancellationToken)
     {
-        var resolution = MediatRSendDispatchResolver.TryResolve(
+        var resolution = MediatRDispatchResolver.TryResolve(
             invocation,
             semanticModel,
             targetMethod,

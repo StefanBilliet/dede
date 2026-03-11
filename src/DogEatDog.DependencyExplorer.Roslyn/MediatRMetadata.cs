@@ -9,7 +9,7 @@ internal sealed record MediatRMetadata(
     string? MediatorMethod,
     string? Resolution)
 {
-    public static MediatRMetadata From(MediatRSendDispatchResolution dispatchResolution, GraphEdgeType edgeType)
+    public static MediatRMetadata From(MediatRDispatchResolution dispatchResolution, GraphEdgeType edgeType)
     {
         return edgeType switch
         {
