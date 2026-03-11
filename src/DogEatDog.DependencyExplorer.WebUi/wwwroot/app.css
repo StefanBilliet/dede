@@ -173,11 +173,14 @@ button.secondary {
 .canvas-wrap {
   min-height: 620px;
   padding: 10px;
+  overflow: hidden;
 }
 
 #graphCanvas {
+  display: block;
   width: 100%;
   min-height: 600px;
+  touch-action: none;
 }
 
 .node-card {

@@ -5,6 +5,8 @@ const state = {
   currentView: "workspace-topology",
   currentSubgraph: null,
   pathResult: null,
+  graphTransform: null,
+  graphZoom: null,
 };
 
 const views = [
@@ -81,6 +83,7 @@ async function loadGraph() {
   state.graph = await response.json();
   state.currentSubgraph = null;
   state.pathResult = null;
+  state.graphTransform = null;
   renderStatus(`Loaded graph for ${state.graph.ScanMetadata.RootPath}`);
   populateFilters();
   renderSummary();
@@ -127,6 +130,7 @@ async function scanWorkspace() {
   state.graph = await response.json();
   state.currentSubgraph = null;
   state.pathResult = null;
+  state.graphTransform = null;
   populateFilters();
   renderSummary();
   renderStatus(`Scanned ${state.graph.ScanMetadata.RootPath}`);
@@ -288,11 +292,19 @@ function renderGraph() {
 
   const graph = getWorkingGraph();
   if (!graph.nodes.length) {
+    detachZoom(svg);
     svg.innerHTML = `<text x="40" y="60" fill="#edf5fb">No nodes match the current filters. Reset filters to All or clear the search box.</text>`;
     return;
   }
 
   const layout = createLayout(graph);
+  const bounds = calculateGraphBounds(layout.positions);
+  svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+  const viewport = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  viewport.setAttribute("id", "viewport");
+  svg.appendChild(viewport);
+  attachZoom(svg);
+  syncZoomTransform(svg);
 
   graph.edges.forEach((edge) => {
     const source = layout.positions[edge.SourceId];
@@ -309,7 +321,7 @@ function renderGraph() {
     path.setAttribute("stroke-width", resolveEdgeWidth(edge));
     path.setAttribute("stroke-dasharray", resolveEdgeDash(edge));
     path.setAttribute("stroke-opacity", "0.7");
-    svg.appendChild(path);
+    viewport.appendChild(path);
   });
 
   graph.nodes.forEach((node) => {
@@ -352,8 +364,45 @@ function renderGraph() {
     sub.textContent = node.Type;
 
     group.append(rect, label, sub);
-    svg.appendChild(group);
+    viewport.appendChild(group);
   });
+}
+
+function attachZoom(svg) {
+  if (typeof d3 === "undefined") {
+    return;
+  }
+
+  if (!state.graphZoom) {
+    state.graphZoom = d3.zoom()
+      .scaleExtent([0.3, 4])
+      .on("zoom", (event) => {
+        state.graphTransform = event.transform;
+        const viewport = svg.querySelector("#viewport");
+        if (viewport) {
+          viewport.setAttribute("transform", event.transform.toString());
+        }
+      });
+  }
+
+  d3.select(svg).call(state.graphZoom).on("dblclick.zoom", null);
+}
+
+function detachZoom(svg) {
+  if (typeof d3 === "undefined") {
+    return;
+  }
+
+  d3.select(svg).on(".zoom", null);
+}
+
+function syncZoomTransform(svg) {
+  if (typeof d3 === "undefined" || !state.graphZoom) {
+    return;
+  }
+
+  const transform = state.graphTransform ?? d3.zoomIdentity;
+  d3.select(svg).call(state.graphZoom.transform, transform);
 }
 
 function renderNodeDetails() {
@@ -518,6 +567,21 @@ function createLayout(graph) {
   });
 
   return { positions };
+}
+
+function calculateGraphBounds(positions) {
+  const all = Object.values(positions);
+  if (!all.length) {
+    return { width: 1400, height: 900 };
+  }
+
+  const maxX = Math.max(...all.map((point) => point.x));
+  const maxY = Math.max(...all.map((point) => point.y));
+
+  return {
+    width: Math.max(1400, maxX + 220),
+    height: Math.max(900, maxY + 120),
+  };
 }
 
 function groupByDepth(graph) {
