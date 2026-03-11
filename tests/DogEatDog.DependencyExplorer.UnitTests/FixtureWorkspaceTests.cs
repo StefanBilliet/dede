@@ -124,6 +124,19 @@ public sealed class FixtureWorkspaceTests
     }
 
     [Fact]
+    public async Task MediatRSendResolution_UsesUnresolvedCertaintyWhenNoHandlersExist()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+        var caller = FindNode(graph, GraphNodeType.Method, "OrdersController.GetViaMediatorMissingHandler");
+        var requestNode = FindNodeByDisplayName(graph, "MissingHandlerQuery");
+
+        var dispatchEdge = AssertHasEdge(graph, caller.Id, requestNode.Id, GraphEdgeType.DISPATCHES);
+
+        Assert.Equal(Certainty.Unresolved, dispatchEdge.Certainty);
+        Assert.Equal("no-handler-found", dispatchEdge.Metadata["resolution"]);
+    }
+
+    [Fact]
     public async Task HttpClientDiscovery_ResolvesCrossRepoEndpoints()
     {
         var graph = await TestWorkspaceGraph.GetAsync();

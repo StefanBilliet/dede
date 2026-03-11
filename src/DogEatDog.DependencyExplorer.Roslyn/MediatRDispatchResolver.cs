@@ -118,6 +118,25 @@ internal sealed record MediatRDispatchResolution(
     MediatRDispatchKind DispatchKind,
     IReadOnlyList<MethodReference> HandlerMethods)
 {
+    public MediatRDispatchResolutionOutcome DetermineOutcome()
+    {
+        if (DispatchKind == MediatRDispatchKind.Send && HandlerMethods.Count == 0)
+        {
+            return MediatRDispatchResolutionOutcome.MissingHandler;
+        }
+
+        return MediatRDispatchResolutionOutcome.Resolved;
+    }
+
+    public Certainty DetermineDispatchCertainty()
+    {
+        return DetermineOutcome() switch
+        {
+            MediatRDispatchResolutionOutcome.MissingHandler => Certainty.Unresolved,
+            _ => Certainty.Exact
+        };
+    }
+
     public Certainty DetermineCertainty()
     {
         var certainty = HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
@@ -128,6 +147,12 @@ internal sealed record MediatRDispatchResolution(
 
         return certainty;
     }
+}
+
+internal enum MediatRDispatchResolutionOutcome
+{
+    Resolved,
+    MissingHandler
 }
 
 internal enum MediatRDispatchKind

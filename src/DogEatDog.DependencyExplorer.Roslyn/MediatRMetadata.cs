@@ -18,7 +18,9 @@ internal sealed record MediatRMetadata(
                 DispatchKind: dispatchResolution.DispatchKind,
                 RequestType: dispatchResolution.RequestTypeDisplayName,
                 MediatorMethod: dispatchResolution.MediatorMethodDisplayName,
-                Resolution: null),
+                Resolution: dispatchResolution.DetermineOutcome() == MediatRDispatchResolutionOutcome.MissingHandler
+                    ? "no-handler-found"
+                    : null),
             GraphEdgeType.HANDLED_BY => new MediatRMetadata(
                 DispatchFramework: "MediatR",
                 DispatchKind: dispatchResolution.DispatchKind,

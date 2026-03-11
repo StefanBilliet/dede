@@ -63,6 +63,8 @@ public sealed class GetOrderProjectionSecondaryHandler(IOrdersService ordersServ
         => Task.FromResult(ordersService.GetOrder(request.Id));
 }
 
+public sealed record MissingHandlerQuery(int Id) : IRequest<string>;
+
 public sealed record OrderViewedNotification(int Id) : INotification;
 
 public sealed class OrderViewedNotificationHandler(IOrdersService ordersService) : INotificationHandler<OrderViewedNotification>

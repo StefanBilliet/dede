@@ -49,7 +49,7 @@ internal static class MediatRDispatchEdgeContributor
             SymbolUtilities.ToSourceLocation(invocation),
             projectContext.RepositoryName,
             projectContext.ProjectName,
-            Certainty.Exact,
+            resolution.DetermineDispatchCertainty(),
             MediatRMetadata.From(resolution, GraphEdgeType.DISPATCHES).ToDictionary());
 
         var certainty = resolution.DetermineCertainty();

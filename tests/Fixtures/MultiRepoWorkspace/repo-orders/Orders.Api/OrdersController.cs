@@ -31,6 +31,9 @@ public sealed class OrdersController(IOrdersService ordersService, IMediator med
     [HttpGet("projection/{id}")]
     public string GetProjectionViaMediator(int id) => mediator.Send(new GetOrderProjectionQuery(id)).GetAwaiter().GetResult();
 
+    [HttpGet("missing-handler/{id}")]
+    public string GetViaMediatorMissingHandler(int id) => mediator.Send(new MissingHandlerQuery(id)).GetAwaiter().GetResult();
+
     [HttpPost("notify/{id}")]
     public Task PublishOrderViewed(int id, CancellationToken cancellationToken)
         => mediator.Publish(new OrderViewedNotification(id), cancellationToken);
