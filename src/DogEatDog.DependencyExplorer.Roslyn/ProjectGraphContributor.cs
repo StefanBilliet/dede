@@ -398,12 +398,10 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
             projectContext.RepositoryName,
             projectContext.ProjectName,
             Certainty.Exact,
-            new Dictionary<string, string?>
-            {
-                ["dispatchFramework"] = "MediatR",
-                ["mediatorMethod"] = resolution.MediatorMethodDisplayName,
-                ["requestType"] = resolution.RequestTypeDisplayName
-            });
+            CreateMediatRMetadata(
+                resolution,
+                includeMediatorMethod: true,
+                includeResolution: false));
 
         var certainty = resolution.HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
         foreach (var handlerMethod in resolution.HandlerMethods.DistinctBy(method => method.Id, StringComparer.OrdinalIgnoreCase))
@@ -426,12 +424,35 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 projectContext.RepositoryName,
                 projectContext.ProjectName,
                 certainty,
-                new Dictionary<string, string?>
-                {
-                    ["dispatchFramework"] = "MediatR",
-                    ["resolution"] = "request-handler",
-                    ["requestType"] = resolution.RequestTypeDisplayName
-                });
+                CreateMediatRMetadata(
+                    resolution,
+                    includeMediatorMethod: false,
+                    includeResolution: true));
         }
+    }
+
+    private static Dictionary<string, string?> CreateMediatRMetadata(
+        MediatRSendDispatchResolution resolution,
+        bool includeMediatorMethod,
+        bool includeResolution)
+    {
+        var metadata = new Dictionary<string, string?>
+        {
+            ["dispatchFramework"] = "MediatR",
+            ["dispatchKind"] = resolution.DispatchKind,
+            ["requestType"] = resolution.RequestTypeDisplayName
+        };
+
+        if (includeMediatorMethod)
+        {
+            metadata["mediatorMethod"] = resolution.MediatorMethodDisplayName;
+        }
+
+        if (includeResolution)
+        {
+            metadata["resolution"] = "request-handler";
+        }
+
+        return metadata;
     }
 }

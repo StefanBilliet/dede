@@ -89,6 +89,21 @@ public sealed class FixtureWorkspaceTests
     }
 
     [Fact]
+    public async Task MediatRPublishResolution_AddsDispatchAndHandlerEdgesForNotification()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+
+        var publisherMethod = FindNode(graph, GraphNodeType.Method, "OrdersController.PublishOrderViewed");
+        var notificationNode = FindNodeByDisplayName(graph, "OrderViewedNotification");
+        var handlerMethod = FindNode(graph, GraphNodeType.Method, "OrderViewedNotificationHandler.Handle");
+
+        var dispatchEdge = AssertHasEdge(graph, publisherMethod.Id, notificationNode.Id, GraphEdgeType.DISPATCHES);
+        var handledByEdge = AssertHasEdge(graph, notificationNode.Id, handlerMethod.Id, GraphEdgeType.HANDLED_BY);
+        Assert.Equal("publish", dispatchEdge.Metadata["dispatchKind"]);
+        Assert.Equal("publish", handledByEdge.Metadata["dispatchKind"]);
+    }
+
+    [Fact]
     public async Task HttpClientDiscovery_ResolvesCrossRepoEndpoints()
     {
         var graph = await TestWorkspaceGraph.GetAsync();

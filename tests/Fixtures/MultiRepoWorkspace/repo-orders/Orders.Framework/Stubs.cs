@@ -90,6 +90,8 @@ namespace Microsoft.AspNetCore.Builder
 
 namespace MediatR
 {
+    public interface INotification;
+
     public interface IRequest<out TResponse>;
 
     public interface IRequest;
@@ -105,7 +107,15 @@ namespace MediatR
             System.Threading.CancellationToken cancellationToken = default);
     }
 
-    public interface IMediator : ISender;
+    public interface IPublisher
+    {
+        System.Threading.Tasks.Task Publish<TNotification>(
+            TNotification notification,
+            System.Threading.CancellationToken cancellationToken = default)
+            where TNotification : INotification;
+    }
+
+    public interface IMediator : ISender, IPublisher;
 
     public interface IRequestHandler<in TRequest, TResponse>
         where TRequest : IRequest<TResponse>
@@ -120,6 +130,14 @@ namespace MediatR
     {
         System.Threading.Tasks.Task Handle(
             TRequest request,
+            System.Threading.CancellationToken cancellationToken);
+    }
+
+    public interface INotificationHandler<in TNotification>
+        where TNotification : INotification
+    {
+        System.Threading.Tasks.Task Handle(
+            TNotification notification,
             System.Threading.CancellationToken cancellationToken);
     }
 }

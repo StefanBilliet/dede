@@ -12,7 +12,8 @@ internal static class MediatRSendDispatchResolver
         WorkspaceSymbolCatalog symbolCatalog,
         CancellationToken cancellationToken)
     {
-        if (!IsMediatRSendMethod(invokedMethod))
+        var dispatchKind = GetDispatchKind(invokedMethod);
+        if (dispatchKind is null)
         {
             return null;
         }
@@ -30,30 +31,44 @@ internal static class MediatRSendDispatchResolver
         }
 
         var requestTypeId = SymbolUtilities.CreateTypeId(requestType);
-        var handlers = symbolCatalog.RequestHandlerMethodsByRequestTypeId.GetValueOrDefault(requestTypeId, []);
+        var handlers = string.Equals(dispatchKind, MediatRDispatchKind.Send, StringComparison.Ordinal)
+            ? symbolCatalog.RequestHandlerMethodsByRequestTypeId.GetValueOrDefault(requestTypeId, [])
+            : symbolCatalog.NotificationHandlerMethodsByNotificationTypeId.GetValueOrDefault(requestTypeId, []);
 
         var methodDisplay = invokedMethod.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         var requestDisplay = requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
 
-        return new MediatRSendDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, handlers);
+        return new MediatRSendDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, dispatchKind, handlers);
     }
 
-    private static bool IsMediatRSendMethod(IMethodSymbol methodSymbol)
+    private static string? GetDispatchKind(IMethodSymbol methodSymbol)
     {
-        if (!string.Equals(methodSymbol.Name, "Send", StringComparison.Ordinal))
+        var methodName = methodSymbol.Name;
+        if (!string.Equals(methodName, "Send", StringComparison.Ordinal)
+            && !string.Equals(methodName, "Publish", StringComparison.Ordinal))
         {
-            return false;
+            return null;
         }
 
-        return IsMediatRInterface(methodSymbol.ContainingType)
+        var isMediatRMethod = IsMediatRInterface(methodSymbol.ContainingType)
             || methodSymbol.ContainingType.AllInterfaces.Any(IsMediatRInterface);
+
+        if (!isMediatRMethod)
+        {
+            return null;
+        }
+
+        return string.Equals(methodName, "Send", StringComparison.Ordinal)
+            ? MediatRDispatchKind.Send
+            : MediatRDispatchKind.Publish;
     }
 
     private static bool IsMediatRInterface(INamedTypeSymbol typeSymbol)
     {
         var name = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
         return string.Equals(name, "MediatR.ISender", StringComparison.Ordinal)
-            || string.Equals(name, "MediatR.IMediator", StringComparison.Ordinal);
+            || string.Equals(name, "MediatR.IMediator", StringComparison.Ordinal)
+            || string.Equals(name, "MediatR.IPublisher", StringComparison.Ordinal);
     }
 
     private static INamedTypeSymbol? ResolveConcreteRequestType(
@@ -107,4 +122,11 @@ internal sealed record MediatRSendDispatchResolution(
     string RequestTypeId,
     string RequestTypeDisplayName,
     string MediatorMethodDisplayName,
+    string DispatchKind,
     IReadOnlyList<MethodReference> HandlerMethods);
+
+internal static class MediatRDispatchKind
+{
+    public const string Send = "send";
+    public const string Publish = "publish";
+}

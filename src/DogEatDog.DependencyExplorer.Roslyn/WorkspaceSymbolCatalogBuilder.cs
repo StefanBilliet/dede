@@ -8,6 +8,7 @@ internal static class WorkspaceSymbolCatalogBuilder
 {
     private const string MediatRRequestHandlerTwoArg = "MediatR.IRequestHandler<TRequest, TResponse>";
     private const string MediatRRequestHandlerOneArg = "MediatR.IRequestHandler<TRequest>";
+    private const string MediatRNotificationHandlerOneArg = "MediatR.INotificationHandler<TNotification>";
 
     private static readonly HashSet<string> RegistrationMethodNames = new(StringComparer.Ordinal)
     {
@@ -80,6 +81,14 @@ internal static class WorkspaceSymbolCatalogBuilder
                             {
                                 catalog.RequestHandlerMethodsByRequestTypeId
                                     .GetOrAdd(requestTypeId)
+                                    .AddDistinctMethodReference(methodReference);
+                            }
+
+                            if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
+                                && TryGetMediatRNotificationTypeId(interfaceSymbol) is { } notificationTypeId)
+                            {
+                                catalog.NotificationHandlerMethodsByNotificationTypeId
+                                    .GetOrAdd(notificationTypeId)
                                     .AddDistinctMethodReference(methodReference);
                             }
                         }
@@ -207,5 +216,24 @@ internal static class WorkspaceSymbolCatalogBuilder
         }
 
         methods.Add(method);
+    }
+
+    private static string? TryGetMediatRNotificationTypeId(INamedTypeSymbol interfaceSymbol)
+    {
+        var originalDefinition = interfaceSymbol.OriginalDefinition;
+        if (!originalDefinition.IsGenericType || interfaceSymbol.TypeArguments.Length != 1)
+        {
+            return null;
+        }
+
+        var fullName = originalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+        if (!string.Equals(fullName, MediatRNotificationHandlerOneArg, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return interfaceSymbol.TypeArguments[0] is INamedTypeSymbol notificationType
+            ? SymbolUtilities.CreateTypeId(notificationType)
+            : null;
     }
 }

@@ -62,3 +62,14 @@ public sealed class GetOrderProjectionSecondaryHandler(IOrdersService ordersServ
     public Task<string> Handle(GetOrderProjectionQuery request, CancellationToken cancellationToken)
         => Task.FromResult(ordersService.GetOrder(request.Id));
 }
+
+public sealed record OrderViewedNotification(int Id) : INotification;
+
+public sealed class OrderViewedNotificationHandler(IOrdersService ordersService) : INotificationHandler<OrderViewedNotification>
+{
+    public Task Handle(OrderViewedNotification notification, CancellationToken cancellationToken)
+    {
+        ordersService.GetOrder(notification.Id);
+        return Task.CompletedTask;
+    }
+}
