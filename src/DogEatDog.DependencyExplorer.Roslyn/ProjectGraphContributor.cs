@@ -403,7 +403,7 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 includeMediatorMethod: true,
                 includeResolution: false));
 
-        var certainty = resolution.HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
+        var certainty = resolution.DetermineCertainty();
         foreach (var handlerMethod in resolution.HandlerMethods.DistinctBy(method => method.Id, StringComparer.OrdinalIgnoreCase))
         {
             graphBuilder.AddNode(
@@ -430,7 +430,7 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                     includeResolution: true));
         }
     }
-
+    
     private static Dictionary<string, string?> CreateMediatRMetadata(
         MediatRSendDispatchResolution resolution,
         bool includeMediatorMethod,

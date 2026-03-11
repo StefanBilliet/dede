@@ -73,3 +73,9 @@ public sealed class OrderViewedNotificationHandler(IOrdersService ordersService)
         return Task.CompletedTask;
     }
 }
+
+public sealed class OrderViewedAuditNotificationHandler : INotificationHandler<OrderViewedNotification>
+{
+    public Task Handle(OrderViewedNotification notification, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+}

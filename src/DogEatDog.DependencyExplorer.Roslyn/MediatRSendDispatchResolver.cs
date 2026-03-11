@@ -1,3 +1,4 @@
+using DogEatDog.DependencyExplorer.Core.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -123,7 +124,19 @@ internal sealed record MediatRSendDispatchResolution(
     string RequestTypeDisplayName,
     string MediatorMethodDisplayName,
     string DispatchKind,
-    IReadOnlyList<MethodReference> HandlerMethods);
+    IReadOnlyList<MethodReference> HandlerMethods)
+{
+    public Certainty DetermineCertainty()
+    {
+        var certainty = HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
+        if (string.Equals(DispatchKind, MediatRDispatchKind.Publish, StringComparison.Ordinal))
+        {
+            certainty = Certainty.Exact;
+        }
+
+        return certainty;
+    }
+};
 
 internal static class MediatRDispatchKind
 {

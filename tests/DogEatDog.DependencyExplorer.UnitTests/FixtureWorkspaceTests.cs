@@ -89,18 +89,26 @@ public sealed class FixtureWorkspaceTests
     }
 
     [Fact]
-    public async Task MediatRPublishResolution_AddsDispatchAndHandlerEdgesForNotification()
+    public async Task MediatRPublishResolution_UsesExactCertaintyWhenNotificationHasMultipleHandlers()
     {
         var graph = await TestWorkspaceGraph.GetAsync();
 
         var publisherMethod = FindNode(graph, GraphNodeType.Method, "OrdersController.PublishOrderViewed");
         var notificationNode = FindNodeByDisplayName(graph, "OrderViewedNotification");
-        var handlerMethod = FindNode(graph, GraphNodeType.Method, "OrderViewedNotificationHandler.Handle");
+        var primaryHandlerMethod = FindNode(graph, GraphNodeType.Method, "OrderViewedNotificationHandler.Handle");
+        var auditHandlerMethod = FindNode(graph, GraphNodeType.Method, "OrderViewedAuditNotificationHandler.Handle");
 
         var dispatchEdge = AssertHasEdge(graph, publisherMethod.Id, notificationNode.Id, GraphEdgeType.DISPATCHES);
-        var handledByEdge = AssertHasEdge(graph, notificationNode.Id, handlerMethod.Id, GraphEdgeType.HANDLED_BY);
+        var handledByEdges = graph.Edges
+            .Where(edge => edge.SourceId == notificationNode.Id && edge.Type == GraphEdgeType.HANDLED_BY)
+            .ToArray();
+
+        Assert.Equal(2, handledByEdges.Length);
+        Assert.Contains(handledByEdges, edge => edge.TargetId == primaryHandlerMethod.Id);
+        Assert.Contains(handledByEdges, edge => edge.TargetId == auditHandlerMethod.Id);
         Assert.Equal("publish", dispatchEdge.Metadata["dispatchKind"]);
-        Assert.Equal("publish", handledByEdge.Metadata["dispatchKind"]);
+        Assert.All(handledByEdges, edge => Assert.Equal("publish", edge.Metadata["dispatchKind"]));
+        Assert.All(handledByEdges, edge => Assert.Equal(Certainty.Exact, edge.Certainty));
     }
 
     [Fact]
