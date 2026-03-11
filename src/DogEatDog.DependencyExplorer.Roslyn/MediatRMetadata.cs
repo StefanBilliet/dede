@@ -4,7 +4,7 @@ namespace DogEatDog.DependencyExplorer.Roslyn;
 
 internal sealed record MediatRMetadata(
     string DispatchFramework,
-    string DispatchKind,
+    MediatRDispatchKind DispatchKind,
     string RequestType,
     string? MediatorMethod,
     string? Resolution)
@@ -34,7 +34,7 @@ internal sealed record MediatRMetadata(
         var metadata = new Dictionary<string, string?>
         {
             ["dispatchFramework"] = DispatchFramework,
-            ["dispatchKind"] = DispatchKind,
+            ["dispatchKind"] = DispatchKind.ToMetadataValue(),
             ["requestType"] = RequestType
         };
 

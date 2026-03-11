@@ -32,17 +32,17 @@ internal static class MediatRSendDispatchResolver
         }
 
         var requestTypeId = SymbolUtilities.CreateTypeId(requestType);
-        var handlers = string.Equals(dispatchKind, MediatRDispatchKind.Send, StringComparison.Ordinal)
+        var handlers = dispatchKind == MediatRDispatchKind.Send
             ? symbolCatalog.RequestHandlerMethodsByRequestTypeId.GetValueOrDefault(requestTypeId, [])
             : symbolCatalog.NotificationHandlerMethodsByNotificationTypeId.GetValueOrDefault(requestTypeId, []);
 
         var methodDisplay = invokedMethod.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         var requestDisplay = requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
 
-        return new MediatRSendDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, dispatchKind, handlers);
+        return new MediatRSendDispatchResolution(requestType, requestTypeId, requestDisplay, methodDisplay, dispatchKind.Value, handlers);
     }
 
-    private static string? GetDispatchKind(IMethodSymbol methodSymbol)
+    private static MediatRDispatchKind? GetDispatchKind(IMethodSymbol methodSymbol)
     {
         var methodName = methodSymbol.Name;
         if (!string.Equals(methodName, "Send", StringComparison.Ordinal)
@@ -123,23 +123,33 @@ internal sealed record MediatRSendDispatchResolution(
     string RequestTypeId,
     string RequestTypeDisplayName,
     string MediatorMethodDisplayName,
-    string DispatchKind,
+    MediatRDispatchKind DispatchKind,
     IReadOnlyList<MethodReference> HandlerMethods)
 {
     public Certainty DetermineCertainty()
     {
         var certainty = HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
-        if (string.Equals(DispatchKind, MediatRDispatchKind.Publish, StringComparison.Ordinal))
+        if (DispatchKind == MediatRDispatchKind.Publish)
         {
             certainty = Certainty.Exact;
         }
 
         return certainty;
     }
-};
+}
 
-internal static class MediatRDispatchKind
+internal enum MediatRDispatchKind
 {
-    public const string Send = "send";
-    public const string Publish = "publish";
+    Send,
+    Publish
+}
+
+internal static class MediatRDispatchKindExtensions
+{
+    public static string ToMetadataValue(this MediatRDispatchKind dispatchKind) => dispatchKind switch
+    {
+        MediatRDispatchKind.Send => "send",
+        MediatRDispatchKind.Publish => "publish",
+        _ => throw new ArgumentOutOfRangeException(nameof(dispatchKind), dispatchKind, null)
+    };
 }
