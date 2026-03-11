@@ -43,7 +43,6 @@ public enum GraphEdgeType
     MAPS_TO_TABLE,
     DEPENDS_ON,
     CROSSES_REPO_BOUNDARY,
-    MEDIATR_DISPATCHES,
     AMBIGUOUS
 }
 
