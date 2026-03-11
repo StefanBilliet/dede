@@ -8,6 +8,7 @@ artifacts/
 .DS_Store
 *.user
 *.suo
+.idea/
 
 # Generated scan output
 graph.json

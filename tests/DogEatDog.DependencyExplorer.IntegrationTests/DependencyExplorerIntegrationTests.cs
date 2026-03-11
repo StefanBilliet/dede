@@ -21,6 +21,8 @@ public sealed class DependencyExplorerIntegrationTests
         Assert.True(graph.Statistics.TableCount >= 1);
 
         Assert.Contains(graph.Edges, edge => edge.Type == GraphEdgeType.CROSSES_REPO_BOUNDARY);
+        Assert.Contains(graph.Edges, edge => edge.Type == GraphEdgeType.DISPATCHES);
+        Assert.Contains(graph.Edges, edge => edge.Type == GraphEdgeType.HANDLED_BY);
         Assert.Contains(graph.Nodes, node => node.Type == GraphNodeType.ExternalEndpoint);
     }
 

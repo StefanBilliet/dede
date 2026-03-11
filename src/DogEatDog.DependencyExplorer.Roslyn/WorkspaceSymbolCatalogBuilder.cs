@@ -6,6 +6,9 @@ namespace DogEatDog.DependencyExplorer.Roslyn;
 
 internal static class WorkspaceSymbolCatalogBuilder
 {
+    private const string MediatRRequestHandlerTwoArg = "MediatR.IRequestHandler<TRequest, TResponse>";
+    private const string MediatRRequestHandlerOneArg = "MediatR.IRequestHandler<TRequest>";
+
     private static readonly HashSet<string> RegistrationMethodNames = new(StringComparer.Ordinal)
     {
         "AddScoped",
@@ -60,15 +63,25 @@ internal static class WorkspaceSymbolCatalogBuilder
                                 continue;
                             }
 
+                            var methodReference = new MethodReference(
+                                SymbolUtilities.CreateMethodId(implementationMember),
+                                SymbolUtilities.CreateTypeId(typeSymbol),
+                                SymbolUtilities.GetMethodDisplayName(implementationMember),
+                                SymbolUtilities.ToSourceLocation(implementationMember),
+                                projectContext.RepositoryName,
+                                projectContext.ProjectName);
+
                             catalog.ImplementationMethodsByInterfaceMethodId
                                 .GetOrAdd(SymbolUtilities.CreateMethodId(interfaceMember))
-                                .Add(new MethodReference(
-                                    SymbolUtilities.CreateMethodId(implementationMember),
-                                    SymbolUtilities.CreateTypeId(typeSymbol),
-                                    SymbolUtilities.GetMethodDisplayName(implementationMember),
-                                    SymbolUtilities.ToSourceLocation(implementationMember),
-                                    projectContext.RepositoryName,
-                                    projectContext.ProjectName));
+                                .AddDistinctMethodReference(methodReference);
+
+                            if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
+                                && TryGetMediatRRequestTypeId(interfaceSymbol) is { } requestTypeId)
+                            {
+                                catalog.RequestHandlerMethodsByRequestTypeId
+                                    .GetOrAdd(requestTypeId)
+                                    .AddDistinctMethodReference(methodReference);
+                            }
                         }
                     }
                 }
@@ -164,5 +177,35 @@ internal static class WorkspaceSymbolCatalogBuilder
         }
 
         return list;
+    }
+
+    private static string? TryGetMediatRRequestTypeId(INamedTypeSymbol interfaceSymbol)
+    {
+        var originalDefinition = interfaceSymbol.OriginalDefinition;
+        if (!originalDefinition.IsGenericType || interfaceSymbol.TypeArguments.Length is < 1 or > 2)
+        {
+            return null;
+        }
+
+        var fullName = originalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+        if (!string.Equals(fullName, MediatRRequestHandlerTwoArg, StringComparison.Ordinal)
+            && !string.Equals(fullName, MediatRRequestHandlerOneArg, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return interfaceSymbol.TypeArguments[0] is INamedTypeSymbol requestType
+            ? SymbolUtilities.CreateTypeId(requestType)
+            : null;
+    }
+
+    private static void AddDistinctMethodReference(this List<MethodReference> methods, MethodReference method)
+    {
+        if (methods.Any(existing => string.Equals(existing.Id, method.Id, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        methods.Add(method);
     }
 }

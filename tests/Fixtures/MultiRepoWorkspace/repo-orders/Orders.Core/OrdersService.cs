@@ -1,4 +1,5 @@
 using System.Net.Http;
+using MediatR;
 
 namespace Orders.Core;
 
@@ -38,4 +39,26 @@ public sealed class CatalogGateway(IHttpClientFactory httpClientFactory) : ICata
 public interface IHttpClientFactory
 {
     HttpClient CreateClient(string name);
+}
+
+public sealed record GetOrderQuery(int Id) : IRequest<string>;
+
+public sealed class GetOrderQueryHandler(IOrdersService ordersService) : IRequestHandler<GetOrderQuery, string>
+{
+    public Task<string> Handle(GetOrderQuery request, CancellationToken cancellationToken)
+        => Task.FromResult(ordersService.GetOrder(request.Id));
+}
+
+public sealed record GetOrderProjectionQuery(int Id) : IRequest<string>;
+
+public sealed class GetOrderProjectionPrimaryHandler(IOrdersService ordersService) : IRequestHandler<GetOrderProjectionQuery, string>
+{
+    public Task<string> Handle(GetOrderProjectionQuery request, CancellationToken cancellationToken)
+        => Task.FromResult(ordersService.GetOrder(request.Id));
+}
+
+public sealed class GetOrderProjectionSecondaryHandler(IOrdersService ordersService) : IRequestHandler<GetOrderProjectionQuery, string>
+{
+    public Task<string> Handle(GetOrderProjectionQuery request, CancellationToken cancellationToken)
+        => Task.FromResult(ordersService.GetOrder(request.Id));
 }

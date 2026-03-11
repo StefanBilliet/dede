@@ -257,13 +257,14 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 continue;
             }
 
-            AddCallEdge(projectContext, graphBuilder, methodSymbol, methodId, symbol, invocation, cancellationToken);
+            AddCallEdge(projectContext, graphBuilder, semanticModel, methodSymbol, methodId, symbol, invocation, cancellationToken);
         }
     }
 
     private static void AddCallEdge(
         RoslynProjectContext projectContext,
         GraphBuilder graphBuilder,
+        SemanticModel semanticModel,
         IMethodSymbol caller,
         string callerId,
         IMethodSymbol targetMethod,
@@ -300,6 +301,8 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 return;
             }
         }
+
+        AddMediatRDispatchEdges(projectContext, graphBuilder, semanticModel, caller, callerId, targetMethod, invocation, cancellationToken);
 
         if (targetMethod.ContainingType.TypeKind != TypeKind.Interface)
         {
@@ -349,6 +352,85 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 {
                     ["interfaceMethod"] = interfaceMethodId,
                     ["resolution"] = registered.Count > 0 ? "service-registration" : "interface-implementation"
+                });
+        }
+    }
+
+    private static void AddMediatRDispatchEdges(
+        RoslynProjectContext projectContext,
+        GraphBuilder graphBuilder,
+        SemanticModel semanticModel,
+        IMethodSymbol caller,
+        string callerId,
+        IMethodSymbol targetMethod,
+        InvocationExpressionSyntax invocation,
+        CancellationToken cancellationToken)
+    {
+        var resolution = MediatRSendDispatchResolver.TryResolve(
+            invocation,
+            semanticModel,
+            targetMethod,
+            projectContext.Workspace.SymbolCatalog,
+            cancellationToken);
+
+        if (resolution is null)
+        {
+            return;
+        }
+
+        graphBuilder.AddNode(
+            resolution.RequestTypeId,
+            SymbolUtilities.ClassifyType(resolution.RequestTypeSymbol),
+            SymbolUtilities.GetTypeDisplayName(resolution.RequestTypeSymbol),
+            SymbolUtilities.ToSourceLocation(resolution.RequestTypeSymbol),
+            certainty: Certainty.Exact,
+            metadata: new Dictionary<string, string?>
+            {
+                ["fullName"] = resolution.RequestTypeDisplayName
+            });
+
+        graphBuilder.AddEdge(
+            callerId,
+            resolution.RequestTypeId,
+            GraphEdgeType.DISPATCHES,
+            $"{caller.ContainingType.Name}.{caller.Name} dispatches {resolution.RequestTypeSymbol.Name}",
+            SymbolUtilities.ToSourceLocation(invocation),
+            projectContext.RepositoryName,
+            projectContext.ProjectName,
+            Certainty.Exact,
+            new Dictionary<string, string?>
+            {
+                ["dispatchFramework"] = "MediatR",
+                ["mediatorMethod"] = resolution.MediatorMethodDisplayName,
+                ["requestType"] = resolution.RequestTypeDisplayName
+            });
+
+        var certainty = resolution.HandlerMethods.Count == 1 ? Certainty.Inferred : Certainty.Ambiguous;
+        foreach (var handlerMethod in resolution.HandlerMethods.DistinctBy(method => method.Id, StringComparer.OrdinalIgnoreCase))
+        {
+            graphBuilder.AddNode(
+                handlerMethod.Id,
+                GraphNodeType.Method,
+                handlerMethod.DisplayName,
+                handlerMethod.SourceLocation,
+                handlerMethod.RepositoryName,
+                handlerMethod.ProjectName,
+                certainty);
+
+            graphBuilder.AddEdge(
+                resolution.RequestTypeId,
+                handlerMethod.Id,
+                GraphEdgeType.HANDLED_BY,
+                $"{resolution.RequestTypeSymbol.Name} handled by {handlerMethod.DisplayName}",
+                SymbolUtilities.ToSourceLocation(invocation),
+                projectContext.RepositoryName,
+                projectContext.ProjectName,
+                certainty,
+                new Dictionary<string, string?>
+                {
+                    ["dispatchFramework"] = "MediatR",
+                    ["resolution"] = "request-handler",
+                    ["requestType"] = resolution.RequestTypeDisplayName
                 });
         }
     }

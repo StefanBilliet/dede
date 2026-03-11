@@ -39,6 +39,8 @@ public sealed class WorkspaceSymbolCatalog
     public Dictionary<string, List<MethodReference>> ImplementationMethodsByInterfaceMethodId { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<string, List<ServiceRegistration>> RegisteredImplementationsByInterfaceId { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public Dictionary<string, List<MethodReference>> RequestHandlerMethodsByRequestTypeId { get; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed class RoslynWorkspaceContext

@@ -27,6 +27,13 @@ public sealed class DemoPresetProvider
         },
         new
         {
+            id = "mediatr-dispatch",
+            title = "Show MediatR Dispatch Chains",
+            description = "Filter to request dispatch and handler-resolution edges to inspect endpoint-to-handler flow.",
+            direction = "downstream"
+        },
+        new
+        {
             id = "service-callers",
             title = "Show All Upstream Callers of a Service or Method",
             description = "Walk inbound edges to reveal callers, entry points, and repos affected by a change.",

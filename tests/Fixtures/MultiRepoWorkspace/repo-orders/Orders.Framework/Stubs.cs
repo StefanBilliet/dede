@@ -87,3 +87,39 @@ namespace Microsoft.AspNetCore.Builder
         }
     }
 }
+
+namespace MediatR
+{
+    public interface IRequest<out TResponse>;
+
+    public interface IRequest;
+
+    public interface ISender
+    {
+        System.Threading.Tasks.Task<TResponse> Send<TResponse>(
+            IRequest<TResponse> request,
+            System.Threading.CancellationToken cancellationToken = default);
+
+        System.Threading.Tasks.Task Send(
+            IRequest request,
+            System.Threading.CancellationToken cancellationToken = default);
+    }
+
+    public interface IMediator : ISender;
+
+    public interface IRequestHandler<in TRequest, TResponse>
+        where TRequest : IRequest<TResponse>
+    {
+        System.Threading.Tasks.Task<TResponse> Handle(
+            TRequest request,
+            System.Threading.CancellationToken cancellationToken);
+    }
+
+    public interface IRequestHandler<in TRequest>
+        where TRequest : IRequest
+    {
+        System.Threading.Tasks.Task Handle(
+            TRequest request,
+            System.Threading.CancellationToken cancellationToken);
+    }
+}

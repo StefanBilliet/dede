@@ -33,6 +33,8 @@ public enum GraphEdgeType
     IMPLEMENTS,
     INJECTS,
     CALLS,
+    DISPATCHES,
+    HANDLED_BY,
     USES_HTTP_CLIENT,
     CALLS_HTTP,
     RESOLVES_TO_SERVICE,
@@ -41,6 +43,7 @@ public enum GraphEdgeType
     MAPS_TO_TABLE,
     DEPENDS_ON,
     CROSSES_REPO_BOUNDARY,
+    MEDIATR_DISPATCHES,
     AMBIGUOUS
 }
 

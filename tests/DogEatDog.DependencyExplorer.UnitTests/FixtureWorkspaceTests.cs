@@ -35,6 +35,60 @@ public sealed class FixtureWorkspaceTests
     }
 
     [Fact]
+    public async Task MediatRSendResolution_AddsDispatchEdgeForSingleHandler()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+
+        var controllerMethod = FindNode(graph, GraphNodeType.Method, "OrdersController.GetViaMediator");
+        var requestNode = FindNodeByDisplayName(graph, "GetOrderQuery");
+        var handlerMethod = FindNode(graph, GraphNodeType.Method, "GetOrderQueryHandler.Handle");
+
+        var dispatchEdge = AssertHasEdge(graph, controllerMethod.Id, requestNode.Id, GraphEdgeType.DISPATCHES);
+        var handledByEdge = AssertHasEdge(graph, requestNode.Id, handlerMethod.Id, GraphEdgeType.HANDLED_BY);
+
+        Assert.Equal(Certainty.Exact, dispatchEdge.Certainty);
+        Assert.Equal("MediatR", dispatchEdge.Metadata["dispatchFramework"]);
+        Assert.Equal("Orders.Core.GetOrderQuery", dispatchEdge.Metadata["requestType"]);
+        Assert.Equal(Certainty.Inferred, handledByEdge.Certainty);
+    }
+
+    [Fact]
+    public async Task MediatRSendResolution_ResolvesLocalVariableAndGenericAsyncSend()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+
+        var requestNode = FindNodeByDisplayName(graph, "GetOrderQuery");
+        var localVariableCaller = FindNode(graph, GraphNodeType.Method, "OrdersController.GetViaMediatorVariable");
+        var genericAsyncCaller = FindNode(graph, GraphNodeType.Method, "OrdersController.GetViaMediatorGenericAsync");
+
+        AssertHasEdge(graph, localVariableCaller.Id, requestNode.Id, GraphEdgeType.DISPATCHES);
+        AssertHasEdge(graph, genericAsyncCaller.Id, requestNode.Id, GraphEdgeType.DISPATCHES);
+    }
+
+    [Fact]
+    public async Task MediatRSendResolution_UsesAmbiguousCertaintyWhenMultipleHandlersExist()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+
+        var controllerMethod = FindNode(graph, GraphNodeType.Method, "OrdersController.GetProjectionViaMediator");
+        var requestNode = FindNodeByDisplayName(graph, "GetOrderProjectionQuery");
+        var primaryHandler = FindNode(graph, GraphNodeType.Method, "GetOrderProjectionPrimaryHandler.Handle");
+        var secondaryHandler = FindNode(graph, GraphNodeType.Method, "GetOrderProjectionSecondaryHandler.Handle");
+
+        var dispatchEdge = AssertHasEdge(graph, controllerMethod.Id, requestNode.Id, GraphEdgeType.DISPATCHES);
+        Assert.Equal(Certainty.Exact, dispatchEdge.Certainty);
+
+        var handledByEdges = graph.Edges
+            .Where(edge => edge.SourceId == requestNode.Id && edge.Type == GraphEdgeType.HANDLED_BY)
+            .ToArray();
+
+        Assert.Equal(2, handledByEdges.Length);
+        Assert.All(handledByEdges, edge => Assert.Equal(Certainty.Ambiguous, edge.Certainty));
+        Assert.Contains(handledByEdges, edge => edge.TargetId == primaryHandler.Id);
+        Assert.Contains(handledByEdges, edge => edge.TargetId == secondaryHandler.Id);
+    }
+
+    [Fact]
     public async Task HttpClientDiscovery_ResolvesCrossRepoEndpoints()
     {
         var graph = await TestWorkspaceGraph.GetAsync();
@@ -84,18 +138,23 @@ public sealed class FixtureWorkspaceTests
     private static GraphNode FindNode(DogEatDog.DependencyExplorer.Graph.Model.GraphDocument graph, GraphNodeType type, string displayName) =>
         graph.Nodes.Single(node => node.Type == type && node.DisplayName == displayName);
 
-    private static void AssertHasEdge(
+    private static GraphNode FindNodeByDisplayName(DogEatDog.DependencyExplorer.Graph.Model.GraphDocument graph, string displayName) =>
+        graph.Nodes.Single(node => node.DisplayName == displayName);
+
+    private static GraphEdge AssertHasEdge(
         DogEatDog.DependencyExplorer.Graph.Model.GraphDocument graph,
         string sourceId,
         string targetId,
         GraphEdgeType edgeType,
         string? displayNameContains = null)
     {
-        Assert.Contains(graph.Edges, edge =>
+        var edge = Assert.Single(graph.Edges, edge =>
             edge.SourceId == sourceId
             && edge.TargetId == targetId
             && edge.Type == edgeType
             && (displayNameContains is null || edge.DisplayName.Contains(displayNameContains, StringComparison.OrdinalIgnoreCase)));
+
+        return edge;
     }
 }
 

@@ -10,6 +10,7 @@ const state = {
 const views = [
   { id: "workspace-topology", title: "Workspace topology" },
   { id: "service-dependencies", title: "Service/API dependencies" },
+  { id: "mediatr-dispatch", title: "MediatR dispatch flow" },
   { id: "data-impact", title: "Data/table impact" },
   { id: "cross-repo", title: "Cross-repo map" },
   { id: "ambiguity-audit", title: "Unresolved audit" },
@@ -34,6 +35,14 @@ const colors = {
   Table: "#f6bd60",
   ConfigurationKey: "#8aa2b7",
 };
+
+const edgeColors = {
+  DISPATCHES: "#f9c74f",
+  HANDLED_BY: "#06d6a0",
+  CROSSES_REPO_BOUNDARY: "#ff5d5d",
+};
+
+const mediatrEdgeTypes = new Set(["DISPATCHES", "HANDLED_BY"]);
 
 boot();
 
@@ -186,6 +195,9 @@ function applyPreset(id, direction) {
   } else if (id === "service-callers") {
     nodeTypeFilter.value = "Service";
     state.currentView = "service-dependencies";
+  } else if (id === "mediatr-dispatch") {
+    edgeTypeFilter.value = "All";
+    state.currentView = "mediatr-dispatch";
   } else if (id === "ambiguity-audit") {
     state.currentView = "ambiguity-audit";
     document.getElementById("ambiguousToggle").checked = true;
@@ -244,11 +256,13 @@ function renderSummary() {
   }
 
   const stats = state.graph.Statistics;
+  const mediatrEdgeCount = state.graph.Edges.filter((edge) => mediatrEdgeTypes.has(edge.Type)).length;
   host.innerHTML = [
     tile("Repos scanned", stats.RepositoryCount),
     tile("Projects", stats.ProjectCount),
     tile("Endpoints", stats.EndpointCount),
     tile("Methods", stats.MethodCount),
+    tile("MediatR edges", mediatrEdgeCount),
     tile("HTTP edges", stats.HttpEdgeCount),
     tile("DB tables", stats.TableCount),
     tile("Cross-repo links", stats.CrossRepoLinkCount),
@@ -291,8 +305,9 @@ function renderGraph() {
     const midX = (source.x + target.x) / 2;
     path.setAttribute("d", `M ${source.x} ${source.y} C ${midX} ${source.y}, ${midX} ${target.y}, ${target.x} ${target.y}`);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", edge.Certainty === "Exact" ? "#4ecdc4" : edge.Certainty === "Inferred" ? "#ffd166" : "#ff5d5d");
-    path.setAttribute("stroke-width", edge.Type === "CROSSES_REPO_BOUNDARY" ? "3" : "1.4");
+    path.setAttribute("stroke", resolveEdgeStroke(edge));
+    path.setAttribute("stroke-width", resolveEdgeWidth(edge));
+    path.setAttribute("stroke-dasharray", resolveEdgeDash(edge));
     path.setAttribute("stroke-opacity", "0.7");
     svg.appendChild(path);
   });
@@ -365,6 +380,7 @@ function renderNodeDetails() {
     </div>
     <div class="legend">
       ${Object.entries(colors).slice(0, 8).map(([name, color]) => `<span><i style="background:${color}"></i>${name}</span>`).join("")}
+      ${Object.entries(edgeColors).filter(([name]) => mediatrEdgeTypes.has(name)).map(([name, color]) => `<span><i style="background:${color}"></i>${name}</span>`).join("")}
     </div>
   `;
 }
@@ -452,6 +468,12 @@ function applyViewFilter(nodes, edges) {
   if (state.currentView === "service-dependencies") {
     const allowed = new Set(["Controller", "Endpoint", "Service", "Implementation", "Interface", "Method", "HttpClient", "ExternalService", "ExternalEndpoint", "Project", "Repository"]);
     return filterByTypes(nodes, edges, allowed, null);
+  }
+
+  if (state.currentView === "mediatr-dispatch") {
+    const filteredEdges = edges.filter((edge) => mediatrEdgeTypes.has(edge.Type));
+    const related = new Set(filteredEdges.flatMap((edge) => [edge.SourceId, edge.TargetId]));
+    return { nodes: nodes.filter((node) => related.has(node.Id) && nodeIds.has(node.Id)), edges: filteredEdges };
   }
 
   if (state.currentView === "data-impact") {
@@ -556,4 +578,32 @@ function formatLocation(location) {
 
 function unique(values) {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b));
+}
+
+function resolveEdgeStroke(edge) {
+  if (edgeColors[edge.Type]) {
+    return edgeColors[edge.Type];
+  }
+
+  return edge.Certainty === "Exact" ? "#4ecdc4" : edge.Certainty === "Inferred" ? "#ffd166" : "#ff5d5d";
+}
+
+function resolveEdgeWidth(edge) {
+  if (edge.Type === "CROSSES_REPO_BOUNDARY") {
+    return "3";
+  }
+
+  if (mediatrEdgeTypes.has(edge.Type)) {
+    return "2.4";
+  }
+
+  return "1.4";
+}
+
+function resolveEdgeDash(edge) {
+  if (edge.Type === "DISPATCHES") {
+    return "5 3";
+  }
+
+  return "";
 }

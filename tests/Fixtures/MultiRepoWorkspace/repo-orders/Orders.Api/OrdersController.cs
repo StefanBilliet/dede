@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using MediatR;
 using Orders.Core;
 using Orders.Data;
 
@@ -7,10 +8,27 @@ namespace Orders.Api;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class OrdersController(IOrdersService ordersService) : ControllerBase
+public sealed class OrdersController(IOrdersService ordersService, ISender sender) : ControllerBase
 {
     [HttpGet("{id}")]
     public string Get(int id) => ordersService.GetOrder(id);
+
+    [HttpGet("mediated/{id}")]
+    public string GetViaMediator(int id) => sender.Send(new GetOrderQuery(id)).GetAwaiter().GetResult();
+
+    [HttpGet("mediated-var/{id}")]
+    public string GetViaMediatorVariable(int id)
+    {
+        var request = new GetOrderQuery(id);
+        return sender.Send(request).GetAwaiter().GetResult();
+    }
+
+    [HttpGet("mediated-generic/{id}")]
+    public async Task<string> GetViaMediatorGenericAsync(int id, CancellationToken cancellationToken)
+        => await sender.Send<string>(new GetOrderQuery(id), cancellationToken);
+
+    [HttpGet("projection/{id}")]
+    public string GetProjectionViaMediator(int id) => sender.Send(new GetOrderProjectionQuery(id)).GetAwaiter().GetResult();
 }
 
 public static class Startup

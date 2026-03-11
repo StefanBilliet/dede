@@ -127,7 +127,7 @@ button.secondary {
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -208,6 +208,7 @@ button.secondary {
 
 .detail-panel {
   min-height: 500px;
+  min-width: 0;
 }
 
 .metadata {
@@ -219,6 +220,15 @@ button.secondary {
   padding: 10px;
   background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#nodeDetails {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .legend {
