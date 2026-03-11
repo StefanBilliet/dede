@@ -398,10 +398,7 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
             projectContext.RepositoryName,
             projectContext.ProjectName,
             Certainty.Exact,
-            CreateMediatRMetadata(
-                resolution,
-                includeMediatorMethod: true,
-                includeResolution: false));
+            MediatRMetadata.From(resolution, GraphEdgeType.DISPATCHES).ToDictionary());
 
         var certainty = resolution.DetermineCertainty();
         foreach (var handlerMethod in resolution.HandlerMethods.DistinctBy(method => method.Id, StringComparer.OrdinalIgnoreCase))
@@ -424,35 +421,7 @@ internal sealed class ProjectGraphContributor : IRoslynGraphContributor
                 projectContext.RepositoryName,
                 projectContext.ProjectName,
                 certainty,
-                CreateMediatRMetadata(
-                    resolution,
-                    includeMediatorMethod: false,
-                    includeResolution: true));
+                MediatRMetadata.From(resolution, GraphEdgeType.HANDLED_BY).ToDictionary());
         }
-    }
-    
-    private static Dictionary<string, string?> CreateMediatRMetadata(
-        MediatRSendDispatchResolution resolution,
-        bool includeMediatorMethod,
-        bool includeResolution)
-    {
-        var metadata = new Dictionary<string, string?>
-        {
-            ["dispatchFramework"] = "MediatR",
-            ["dispatchKind"] = resolution.DispatchKind,
-            ["requestType"] = resolution.RequestTypeDisplayName
-        };
-
-        if (includeMediatorMethod)
-        {
-            metadata["mediatorMethod"] = resolution.MediatorMethodDisplayName;
-        }
-
-        if (includeResolution)
-        {
-            metadata["resolution"] = "request-handler";
-        }
-
-        return metadata;
     }
 }
