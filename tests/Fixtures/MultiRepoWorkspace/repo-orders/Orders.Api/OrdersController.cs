@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using MediatR;
+using FakeMessaging;
 using Orders.Core;
 using Orders.Data;
 
@@ -8,7 +9,7 @@ namespace Orders.Api;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class OrdersController(IOrdersService ordersService, IMediator mediator) : ControllerBase
+public sealed class OrdersController(IOrdersService ordersService, IMediator mediator, IDispatcher fakeDispatcher) : ControllerBase
 {
     [HttpGet("{id}")]
     public string Get(int id) => ordersService.GetOrder(id);
@@ -33,6 +34,9 @@ public sealed class OrdersController(IOrdersService ordersService, IMediator med
     [HttpPost("notify/{id}")]
     public Task PublishOrderViewed(int id, CancellationToken cancellationToken)
         => mediator.Publish(new OrderViewedNotification(id), cancellationToken);
+
+    [HttpGet("fake-dispatch/{id}")]
+    public string GetViaFakeDispatcher(int id) => fakeDispatcher.Send(new GetOrderQuery(id));
 }
 
 public static class Startup

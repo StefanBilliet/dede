@@ -51,8 +51,8 @@ internal static class MediatRDispatchResolver
             return null;
         }
 
-        var isMediatRMethod = IsMediatRInterface(methodSymbol.ContainingType)
-            || methodSymbol.ContainingType.AllInterfaces.Any(IsMediatRInterface);
+        var isMediatRMethod = MediatRSymbolMatcher.IsMediatorDispatchInterface(methodSymbol.ContainingType)
+            || methodSymbol.ContainingType.AllInterfaces.Any(MediatRSymbolMatcher.IsMediatorDispatchInterface);
 
         if (!isMediatRMethod)
         {
@@ -62,14 +62,6 @@ internal static class MediatRDispatchResolver
         return string.Equals(methodName, "Send", StringComparison.Ordinal)
             ? MediatRDispatchKind.Send
             : MediatRDispatchKind.Publish;
-    }
-
-    private static bool IsMediatRInterface(INamedTypeSymbol typeSymbol)
-    {
-        var name = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
-        return string.Equals(name, "MediatR.ISender", StringComparison.Ordinal)
-            || string.Equals(name, "MediatR.IMediator", StringComparison.Ordinal)
-            || string.Equals(name, "MediatR.IPublisher", StringComparison.Ordinal);
     }
 
     private static INamedTypeSymbol? ResolveConcreteRequestType(

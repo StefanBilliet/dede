@@ -6,10 +6,6 @@ namespace DogEatDog.DependencyExplorer.Roslyn;
 
 internal static class WorkspaceSymbolCatalogBuilder
 {
-    private const string MediatRRequestHandlerTwoArg = "MediatR.IRequestHandler<TRequest, TResponse>";
-    private const string MediatRRequestHandlerOneArg = "MediatR.IRequestHandler<TRequest>";
-    private const string MediatRNotificationHandlerOneArg = "MediatR.INotificationHandler<TNotification>";
-
     private static readonly HashSet<string> RegistrationMethodNames = new(StringComparer.Ordinal)
     {
         "AddScoped",
@@ -77,7 +73,7 @@ internal static class WorkspaceSymbolCatalogBuilder
                                 .AddDistinctMethodReference(methodReference);
 
                             if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
-                                && TryGetMediatRRequestTypeId(interfaceSymbol) is { } requestTypeId)
+                                && MediatRSymbolMatcher.TryGetRequestHandlerRequestTypeId(interfaceSymbol) is { } requestTypeId)
                             {
                                 catalog.MediatR.RequestHandlerMethodsByRequestTypeId
                                     .GetOrAdd(requestTypeId)
@@ -85,7 +81,7 @@ internal static class WorkspaceSymbolCatalogBuilder
                             }
 
                             if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
-                                && TryGetMediatRNotificationTypeId(interfaceSymbol) is { } notificationTypeId)
+                                && MediatRSymbolMatcher.TryGetNotificationHandlerTypeId(interfaceSymbol) is { } notificationTypeId)
                             {
                                 catalog.MediatR.NotificationHandlerMethodsByNotificationTypeId
                                     .GetOrAdd(notificationTypeId)
@@ -188,26 +184,6 @@ internal static class WorkspaceSymbolCatalogBuilder
         return list;
     }
 
-    private static string? TryGetMediatRRequestTypeId(INamedTypeSymbol interfaceSymbol)
-    {
-        var originalDefinition = interfaceSymbol.OriginalDefinition;
-        if (!originalDefinition.IsGenericType || interfaceSymbol.TypeArguments.Length is < 1 or > 2)
-        {
-            return null;
-        }
-
-        var fullName = originalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
-        if (!string.Equals(fullName, MediatRRequestHandlerTwoArg, StringComparison.Ordinal)
-            && !string.Equals(fullName, MediatRRequestHandlerOneArg, StringComparison.Ordinal))
-        {
-            return null;
-        }
-
-        return interfaceSymbol.TypeArguments[0] is INamedTypeSymbol requestType
-            ? SymbolUtilities.CreateTypeId(requestType)
-            : null;
-    }
-
     private static void AddDistinctMethodReference(this List<MethodReference> methods, MethodReference method)
     {
         if (methods.Any(existing => string.Equals(existing.Id, method.Id, StringComparison.OrdinalIgnoreCase)))
@@ -216,24 +192,5 @@ internal static class WorkspaceSymbolCatalogBuilder
         }
 
         methods.Add(method);
-    }
-
-    private static string? TryGetMediatRNotificationTypeId(INamedTypeSymbol interfaceSymbol)
-    {
-        var originalDefinition = interfaceSymbol.OriginalDefinition;
-        if (!originalDefinition.IsGenericType || interfaceSymbol.TypeArguments.Length != 1)
-        {
-            return null;
-        }
-
-        var fullName = originalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
-        if (!string.Equals(fullName, MediatRNotificationHandlerOneArg, StringComparison.Ordinal))
-        {
-            return null;
-        }
-
-        return interfaceSymbol.TypeArguments[0] is INamedTypeSymbol notificationType
-            ? SymbolUtilities.CreateTypeId(notificationType)
-            : null;
     }
 }

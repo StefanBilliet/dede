@@ -141,3 +141,11 @@ namespace MediatR
             System.Threading.CancellationToken cancellationToken);
     }
 }
+
+namespace FakeMessaging
+{
+    public interface IDispatcher
+    {
+        string Send<TMessage>(TMessage message);
+    }
+}

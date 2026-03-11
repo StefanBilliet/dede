@@ -112,6 +112,18 @@ public sealed class FixtureWorkspaceTests
     }
 
     [Fact]
+    public async Task NonMediatRSendLikeMethod_DoesNotAddDispatchEdges()
+    {
+        var graph = await TestWorkspaceGraph.GetAsync();
+
+        var fakeDispatchCaller = FindNode(graph, GraphNodeType.Method, "OrdersController.GetViaFakeDispatcher");
+
+        Assert.DoesNotContain(graph.Edges, edge =>
+            edge.SourceId == fakeDispatchCaller.Id
+            && edge.Type == GraphEdgeType.DISPATCHES);
+    }
+
+    [Fact]
     public async Task HttpClientDiscovery_ResolvesCrossRepoEndpoints()
     {
         var graph = await TestWorkspaceGraph.GetAsync();
