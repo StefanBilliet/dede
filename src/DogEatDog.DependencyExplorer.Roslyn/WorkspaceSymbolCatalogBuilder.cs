@@ -79,7 +79,7 @@ internal static class WorkspaceSymbolCatalogBuilder
                             if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
                                 && TryGetMediatRRequestTypeId(interfaceSymbol) is { } requestTypeId)
                             {
-                                catalog.RequestHandlerMethodsByRequestTypeId
+                                catalog.MediatR.RequestHandlerMethodsByRequestTypeId
                                     .GetOrAdd(requestTypeId)
                                     .AddDistinctMethodReference(methodReference);
                             }
@@ -87,7 +87,7 @@ internal static class WorkspaceSymbolCatalogBuilder
                             if (string.Equals(interfaceMember.Name, "Handle", StringComparison.Ordinal)
                                 && TryGetMediatRNotificationTypeId(interfaceSymbol) is { } notificationTypeId)
                             {
-                                catalog.NotificationHandlerMethodsByNotificationTypeId
+                                catalog.MediatR.NotificationHandlerMethodsByNotificationTypeId
                                     .GetOrAdd(notificationTypeId)
                                     .AddDistinctMethodReference(methodReference);
                             }

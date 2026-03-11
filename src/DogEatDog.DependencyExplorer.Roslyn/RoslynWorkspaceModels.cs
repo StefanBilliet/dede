@@ -40,6 +40,11 @@ public sealed class WorkspaceSymbolCatalog
 
     public Dictionary<string, List<ServiceRegistration>> RegisteredImplementationsByInterfaceId { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    public MediatRSymbolCatalog MediatR { get; } = new();
+}
+
+public sealed class MediatRSymbolCatalog
+{
     public Dictionary<string, List<MethodReference>> RequestHandlerMethodsByRequestTypeId { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<string, List<MethodReference>> NotificationHandlerMethodsByNotificationTypeId { get; } = new(StringComparer.OrdinalIgnoreCase);

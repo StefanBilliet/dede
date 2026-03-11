@@ -33,8 +33,8 @@ internal static class MediatRSendDispatchResolver
 
         var requestTypeId = SymbolUtilities.CreateTypeId(requestType);
         var handlers = dispatchKind == MediatRDispatchKind.Send
-            ? symbolCatalog.RequestHandlerMethodsByRequestTypeId.GetValueOrDefault(requestTypeId, [])
-            : symbolCatalog.NotificationHandlerMethodsByNotificationTypeId.GetValueOrDefault(requestTypeId, []);
+            ? symbolCatalog.MediatR.RequestHandlerMethodsByRequestTypeId.GetValueOrDefault(requestTypeId, [])
+            : symbolCatalog.MediatR.NotificationHandlerMethodsByNotificationTypeId.GetValueOrDefault(requestTypeId, []);
 
         var methodDisplay = invokedMethod.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         var requestDisplay = requestType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
