@@ -50,4 +50,20 @@ describe("App", () => {
     await expectMetricValue("Repositories", "0");
     await expectMetricValue("EF Core entities", "0");
   });
+
+  test("WHEN graph loading fails THEN it shows unavailable values for every dashboard metric", async () => {
+    server.use(
+      http.get("/api/graph", () =>
+        HttpResponse.text("no graph available", { status: 500 }),
+      ),
+    );
+
+    renderWithProviders(<App />);
+
+    await expectMetricValue("Endpoints", "-");
+    await expectMetricValue("Controllers", "-");
+    await expectMetricValue("Services", "-");
+    await expectMetricValue("Repositories", "-");
+    await expectMetricValue("EF Core entities", "-");
+  });
 });
