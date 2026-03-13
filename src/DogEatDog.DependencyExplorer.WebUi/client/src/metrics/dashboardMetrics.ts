@@ -18,7 +18,9 @@ export function createUnavailableMetrics(): DashboardMetric[] {
   return metricDefinitions.map(({ id, label }) => ({ id, label, value: "-" }));
 }
 
-export function createDashboardMetrics(document: GraphDocument): DashboardMetric[] {
+export function createDashboardMetrics(
+  document: GraphDocument,
+): DashboardMetric[] {
   return metricDefinitions.map(({ id, label, nodeType }) => ({
     id,
     label,

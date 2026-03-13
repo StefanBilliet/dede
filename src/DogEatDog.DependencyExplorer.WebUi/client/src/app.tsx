@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
 import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
 import {
   createDashboardMetrics,
@@ -56,7 +56,9 @@ function App() {
     retry: false,
   });
 
-  const metrics = data ? createDashboardMetrics(data) : createUnavailableMetrics();
+  const metrics = data
+    ? createDashboardMetrics(data)
+    : createUnavailableMetrics();
 
   return (
     <main className="app-shell">

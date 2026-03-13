@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MantineProvider } from "@mantine/core";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, within } from "@testing-library/react";
-import type { ReactNode } from "react";
-import { http, HttpResponse } from "msw";
+import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
-import App from "./App";
+import type { ReactNode } from "react";
+import App from "./app";
 import { graphDocumentFactory } from "./test/builders/graphDocumentFactory";
 
 const server = setupServer();

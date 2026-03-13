@@ -10,6 +10,7 @@
     "test": "vitest",
     "test:watch": "vitest",
     "test:run": "vitest run",
+    "isEverythingOk": "npm run lint && npm run build && npm run test:run",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint": "biome check .",

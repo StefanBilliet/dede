@@ -1,8 +1,8 @@
+import type { GraphDocument } from "../types/graph";
 import {
   createDashboardMetrics,
   createUnavailableMetrics,
 } from "./dashboardMetrics";
-import type { GraphDocument } from "../types/graph";
 
 function createGraphDocument(nodeTypes: string[]): GraphDocument {
   return {
