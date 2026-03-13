@@ -1,6 +1,14 @@
 import { Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
+import { useEffect, useState } from "react";
 import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
+import {
+  createDashboardMetrics,
+  createUnavailableMetrics,
+  type DashboardMetric,
+  type GraphDocument,
+} from "./metrics/dashboardMetrics";
 import "reactflow/dist/style.css";
+import {Metrics} from "./metrics/metrics.tsx";
 
 const nodes = [
   {
@@ -34,6 +42,38 @@ const edges = [
 ];
 
 function App() {
+  const [metrics, setMetrics] = useState<DashboardMetric[]>(() => createUnavailableMetrics());
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGraph() {
+      try {
+        const response = await fetch("/api/graph");
+        if (!response.ok) {
+          throw new Error("Graph load failed");
+        }
+
+        const document = (await response.json()) as GraphDocument;
+        if (cancelled) {
+          return;
+        }
+
+        setMetrics(createDashboardMetrics(document));
+      } catch {
+        if (!cancelled) {
+          setMetrics(createUnavailableMetrics());
+        }
+      }
+    }
+
+    loadGraph();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <main className="app-shell">
       <header className="hero">
@@ -50,6 +90,8 @@ function App() {
           </Badge>
         </Group>
       </header>
+
+      <Metrics metrics={metrics} />
 
       <Paper shadow="sm" radius="lg" withBorder className="graph-panel">
         <ReactFlow nodes={nodes} edges={edges} fitView>

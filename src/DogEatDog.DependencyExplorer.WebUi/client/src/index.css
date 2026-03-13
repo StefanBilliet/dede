@@ -50,6 +50,19 @@ body {
   background-size: 24px 24px;
 }
 
+.metric-card {
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.metric-value {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #12313a;
+}
+
 .react-flow__node {
   border: 1px solid rgba(20, 35, 45, 0.14);
   background: #f8fbfc;
