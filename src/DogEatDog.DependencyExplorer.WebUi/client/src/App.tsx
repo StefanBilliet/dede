@@ -1,14 +1,13 @@
+import { useQuery } from "@tanstack/react-query";
 import { Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
-import { useEffect, useState } from "react";
 import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
 import {
   createDashboardMetrics,
   createUnavailableMetrics,
-  type DashboardMetric,
   type GraphDocument,
 } from "./metrics/dashboardMetrics";
 import "reactflow/dist/style.css";
-import {Metrics} from "./metrics/metrics.tsx";
+import { Metrics } from "./metrics/metrics.tsx";
 
 const nodes = [
   {
@@ -41,38 +40,23 @@ const edges = [
   { id: "e-service-table", source: "service", target: "table" },
 ];
 
+async function fetchGraph(): Promise<GraphDocument> {
+  const response = await fetch("/api/graph");
+  if (!response.ok) {
+    throw new Error("Graph load failed");
+  }
+
+  return await response.json();
+}
+
 function App() {
-  const [metrics, setMetrics] = useState<DashboardMetric[]>(() => createUnavailableMetrics());
+  const { data } = useQuery({
+    queryKey: ["graph"],
+    queryFn: fetchGraph,
+    retry: false,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadGraph() {
-      try {
-        const response = await fetch("/api/graph");
-        if (!response.ok) {
-          throw new Error("Graph load failed");
-        }
-
-        const document = (await response.json()) as GraphDocument;
-        if (cancelled) {
-          return;
-        }
-
-        setMetrics(createDashboardMetrics(document));
-      } catch {
-        if (!cancelled) {
-          setMetrics(createUnavailableMetrics());
-        }
-      }
-    }
-
-    loadGraph();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const metrics = data ? createDashboardMetrics(data) : createUnavailableMetrics();
 
   return (
     <main className="app-shell">

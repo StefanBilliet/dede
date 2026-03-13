@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { StrictMode } from "react";
@@ -11,6 +12,8 @@ const theme = createTheme({
   primaryColor: "teal",
 });
 
+const queryClient = new QueryClient();
+
 const rootElement = document.getElementById("root");
 
 if (rootElement === null) {
@@ -19,9 +22,11 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="light">
-      <Notifications />
-      <App />
-    </MantineProvider>
+    <QueryClientProvider client={queryClient}>
+      <MantineProvider theme={theme} defaultColorScheme="light">
+        <Notifications />
+        <App />
+      </MantineProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );
