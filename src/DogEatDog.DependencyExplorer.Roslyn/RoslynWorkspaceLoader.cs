@@ -27,10 +27,10 @@ public sealed class RoslynWorkspaceLoader
             ["AlwaysCompileMarkupFilesInSeparateDomain"] = "false"
         });
 
-        workspace.WorkspaceFailed += (_, args) =>
+        workspace.RegisterWorkspaceFailedHandler(args =>
         {
             warnings.Add(new ScanWarning("workspace-failed", args.Diagnostic.Message, null, Certainty.Ambiguous));
-        };
+        });
 
         progress?.Report(new ScanProgressUpdate(
             "roslyn-load",
