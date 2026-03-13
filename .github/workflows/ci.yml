@@ -20,6 +20,29 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: src/DogEatDog.DependencyExplorer.WebUi/client/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: src/DogEatDog.DependencyExplorer.WebUi/client
+        run: npm ci
+
+      - name: Frontend lint
+        working-directory: src/DogEatDog.DependencyExplorer.WebUi/client
+        run: npm run lint
+
+      - name: Frontend tests
+        working-directory: src/DogEatDog.DependencyExplorer.WebUi/client
+        run: npm run test:run
+
+      - name: Frontend build
+        working-directory: src/DogEatDog.DependencyExplorer.WebUi/client
+        run: npm run build
+
       - name: Restore
         run: dotnet restore DogEatDog.DependencyExplorer.sln
 

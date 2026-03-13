@@ -54,6 +54,7 @@ public static class DependencyExplorerComposition
         ConfigureWebUiStaticFiles(app);
 
         app.MapGet("/", () => Results.Redirect("/_content/DogEatDog.DependencyExplorer.WebUi/index.html"));
+        app.MapGet("/react", () => Results.Redirect("/_content/DogEatDog.DependencyExplorer.WebUi/react/index.html"));
         app.MapGet("/api/graph", (GraphState state) =>
             state.Document is null
                 ? Results.NotFound(new { message = "No graph is loaded. Use /api/scan or start with a graph path." })

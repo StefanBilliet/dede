@@ -1,0 +1,58 @@
+:root {
+  --ui-bg-start: #f2f5f7;
+  --ui-bg-end: #e4ecea;
+  --ui-grid: rgba(10, 30, 40, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(
+      circle at 12% 14%,
+      rgba(25, 120, 110, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(circle at 84% 22%, rgba(50, 85, 125, 0.14), transparent 38%),
+    linear-gradient(160deg, var(--ui-bg-start), var(--ui-bg-end));
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  min-height: 100vh;
+}
+
+.hero {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(18, 38, 49, 0.08);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(8px);
+}
+
+.graph-panel {
+  min-height: calc(100vh - 9rem);
+  overflow: hidden;
+  background-image:
+    linear-gradient(to right, var(--ui-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--ui-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.react-flow__node {
+  border: 1px solid rgba(20, 35, 45, 0.14);
+  background: #f8fbfc;
+  color: #12313a;
+  font-weight: 600;
+}

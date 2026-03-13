@@ -1,6 +1,7 @@
 # Build output
 **/bin/
 **/obj/
+**/node_modules/
 artifacts/
 
 # IDE and OS files
@@ -32,3 +33,7 @@ platform/
 samples/
 services/
 tools/
+
+# Frontend local outputs
+src/DogEatDog.DependencyExplorer.WebUi/client/storybook-static/
+src/DogEatDog.DependencyExplorer.WebUi/wwwroot/react/
