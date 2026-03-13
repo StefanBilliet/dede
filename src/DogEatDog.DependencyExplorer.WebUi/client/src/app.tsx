@@ -1,44 +1,12 @@
 import { Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
+import { DependencyGraph } from "./graph/dependencyGraph";
 import {
   createDashboardMetrics,
   createUnavailableMetrics,
 } from "./metrics/dashboardMetrics";
-import "reactflow/dist/style.css";
 import { Metrics } from "./metrics/metrics.tsx";
 import type { GraphDocument } from "./types/graph";
-
-const nodes = [
-  {
-    id: "endpoint",
-    position: { x: 80, y: 160 },
-    data: { label: "GET /api/orders/{id}" },
-    style: { borderRadius: 12 },
-  },
-  {
-    id: "service",
-    position: { x: 380, y: 120 },
-    data: { label: "OrderService.GetById" },
-    style: { borderRadius: 12 },
-  },
-  {
-    id: "table",
-    position: { x: 700, y: 200 },
-    data: { label: "orders table" },
-    style: { borderRadius: 12 },
-  },
-];
-
-const edges = [
-  {
-    id: "e-endpoint-service",
-    source: "endpoint",
-    target: "service",
-    animated: true,
-  },
-  { id: "e-service-table", source: "service", target: "table" },
-];
 
 async function fetchGraph(): Promise<GraphDocument> {
   const response = await fetch("/api/graph");
@@ -59,6 +27,7 @@ function App() {
   const metrics = data
     ? createDashboardMetrics(data)
     : createUnavailableMetrics();
+  const graphDocument = data ?? { nodes: [], edges: [] };
 
   return (
     <main className="app-shell">
@@ -80,11 +49,7 @@ function App() {
       <Metrics metrics={metrics} />
 
       <Paper shadow="sm" radius="lg" withBorder className="graph-panel">
-        <ReactFlow nodes={nodes} edges={edges} fitView>
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
+        <DependencyGraph document={graphDocument} />
       </Paper>
     </main>
   );

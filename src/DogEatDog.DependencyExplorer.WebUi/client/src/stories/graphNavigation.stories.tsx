@@ -1,26 +1,13 @@
 import { Badge, Group, Paper, Stack, Text, Title } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react";
-import type { CSSProperties } from "react";
 import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  type Edge,
-  type EdgeTypes,
-  MiniMap,
-  type Node,
-  ReactFlow,
-  type Viewport,
-} from "reactflow";
-import "reactflow/dist/style.css";
+  DependencyGraph,
+  type DependencyGraphEdgeStyle,
+  type DependencyGraphInitialFraming,
+} from "../graph/dependencyGraph";
 import type { GraphDocument, GraphEdge, GraphNode } from "../types/graph";
 
 type GraphScene = "ServicePath" | "DenseWorkspace";
-type GraphFraming = "FitView" | "Wide" | "ZoomedIn";
-type GraphEdgeStyle = keyof Pick<
-  EdgeTypes,
-  "default" | "straight" | "step" | "smoothstep"
->;
 
 type SceneDefinition = {
   label: string;
@@ -30,150 +17,28 @@ type SceneDefinition = {
 
 type GraphNavigationStoryProps = {
   scene: GraphScene;
-  framing: GraphFraming;
-  edgeStyle: GraphEdgeStyle;
+  initialFraming: DependencyGraphInitialFraming;
+  edgeStyle: DependencyGraphEdgeStyle;
   selectedNodeId?: string;
   showMiniMap: boolean;
   showControls: boolean;
-};
-
-const selectedNodeStyle: CSSProperties = {
-  border: "1px solid rgba(20, 78, 74, 0.55)",
-  background: "linear-gradient(180deg, #f2fbfa 0%, #dff4ee 100%)",
-  boxShadow: "0 0 0 3px rgba(46, 143, 127, 0.14)",
-};
-
-const defaultNodeStyle: CSSProperties = {
-  borderRadius: 14,
-  border: "1px solid rgba(20, 35, 45, 0.14)",
-  background: "rgba(248, 251, 252, 0.96)",
-  color: "#12313a",
-  fontWeight: 600,
-  padding: "10px 14px",
-};
-
-const scenes: Record<GraphScene, SceneDefinition> = {
-  ServicePath: {
-    label: "API to data path",
-    description:
-      "A readable path for discussing how panning keeps nearby dependencies in view.",
-    document: {
-      nodes: [
-        createGraphNode("endpoint-orders", "Endpoint", "GET /api/orders/{id}"),
-        createGraphNode("orders-controller", "Controller", "OrdersController"),
-        createGraphNode("order-service", "Service", "OrderService.GetById"),
-        createGraphNode("pricing-client", "Client", "PricingClient"),
-        createGraphNode("order-repository", "Repository", "OrderRepository"),
-        createGraphNode("orders-table", "Table", "orders table"),
-        createGraphNode("audit-log", "Table", "audit log"),
-      ],
-      edges: [
-        createGraphEdge("e1", "endpoint-orders", "orders-controller", true),
-        createGraphEdge("e2", "orders-controller", "order-service"),
-        createGraphEdge("e3", "order-service", "pricing-client"),
-        createGraphEdge("e4", "order-service", "order-repository", true),
-        createGraphEdge("e5", "order-repository", "orders-table"),
-        createGraphEdge("e6", "order-service", "audit-log"),
-      ],
-    },
-  },
-  DenseWorkspace: {
-    label: "Cross-project workspace",
-    description:
-      "A denser graph for reviewing legibility when navigation moves between clusters.",
-    document: {
-      nodes: [
-        createGraphNode("api-gateway", "Gateway", "ApiGateway"),
-        createGraphNode("orders-api", "Api", "Orders API"),
-        createGraphNode("billing-api", "Api", "Billing API"),
-        createGraphNode("orders-core", "Project", "Orders.Core"),
-        createGraphNode("orders-data", "Project", "Orders.Data"),
-        createGraphNode("billing-core", "Project", "Billing.Core"),
-        createGraphNode("identity-sdk", "Library", "Identity SDK"),
-        createGraphNode("sql-cluster", "Database", "SQL Cluster"),
-        createGraphNode("event-bus", "Queue", "Event Bus"),
-        createGraphNode("warehouse-job", "Worker", "Warehouse Sync"),
-        createGraphNode("reporting-ui", "Ui", "Reporting UI"),
-        createGraphNode("alerts-worker", "Worker", "Alerts Worker"),
-      ],
-      edges: [
-        createGraphEdge("d1", "api-gateway", "orders-api", true),
-        createGraphEdge("d2", "api-gateway", "billing-api"),
-        createGraphEdge("d3", "orders-api", "orders-core"),
-        createGraphEdge("d4", "orders-api", "orders-data"),
-        createGraphEdge("d5", "billing-api", "billing-core"),
-        createGraphEdge("d6", "orders-core", "identity-sdk"),
-        createGraphEdge("d7", "orders-data", "sql-cluster", true),
-        createGraphEdge("d8", "billing-core", "event-bus"),
-        createGraphEdge("d9", "event-bus", "warehouse-job"),
-        createGraphEdge("d10", "sql-cluster", "warehouse-job"),
-        createGraphEdge("d11", "warehouse-job", "reporting-ui"),
-        createGraphEdge("d12", "event-bus", "alerts-worker", true),
-        createGraphEdge("d13", "reporting-ui", "alerts-worker"),
-      ],
-    },
-  },
-};
-
-const framingLabels: Record<GraphFraming, string> = {
-  FitView: "Fit view overview",
-  Wide: "Wide canvas framing",
-  ZoomedIn: "Zoomed detail framing",
-};
-
-const edgeStyleLabels: Record<GraphEdgeStyle, string> = {
-  default: "Bezier flow",
-  straight: "Straight lines",
-  step: "Step lines",
-  smoothstep: "Smooth step lines",
-};
-
-const defaultViewports: Record<GraphFraming, Viewport> = {
-  FitView: { x: 0, y: 0, zoom: 1 },
-  Wide: { x: -120, y: -10, zoom: 0.72 },
-  ZoomedIn: { x: -360, y: -100, zoom: 1.18 },
-};
-
-const sceneNodePositions: Record<
-  GraphScene,
-  Record<string, { x: number; y: number }>
-> = {
-  ServicePath: {
-    "endpoint-orders": { x: 80, y: 150 },
-    "orders-controller": { x: 330, y: 80 },
-    "order-service": { x: 340, y: 230 },
-    "pricing-client": { x: 620, y: 60 },
-    "order-repository": { x: 630, y: 220 },
-    "orders-table": { x: 910, y: 220 },
-    "audit-log": { x: 910, y: 360 },
-  },
-  DenseWorkspace: {
-    "api-gateway": { x: 80, y: 120 },
-    "orders-api": { x: 260, y: 40 },
-    "billing-api": { x: 260, y: 220 },
-    "orders-core": { x: 520, y: 20 },
-    "orders-data": { x: 520, y: 170 },
-    "billing-core": { x: 520, y: 330 },
-    "identity-sdk": { x: 800, y: 10 },
-    "sql-cluster": { x: 820, y: 180 },
-    "event-bus": { x: 800, y: 340 },
-    "warehouse-job": { x: 1080, y: 120 },
-    "reporting-ui": { x: 1080, y: 290 },
-    "alerts-worker": { x: 1320, y: 220 },
-  },
 };
 
 function createGraphNode(
   id: string,
   type: string,
   displayName: string,
+  layout: { x: number; y: number },
 ): GraphNode {
   return {
     id,
     type,
     displayName,
     certainty: "Exact",
-    metadata: {},
+    metadata: {
+      layoutX: String(layout.x),
+      layoutY: String(layout.y),
+    },
   };
 }
 
@@ -196,36 +61,133 @@ function createGraphEdge(
   };
 }
 
-function createNodes(scene: GraphScene, selectedNodeId?: string): Node[] {
-  return scenes[scene].document.nodes.map((node) => ({
-    id: node.id ?? node.displayName ?? node.type,
-    position: sceneNodePositions[scene][node.id ?? ""] ?? {
-      x: 0,
-      y: 0,
+const scenes: Record<GraphScene, SceneDefinition> = {
+  ServicePath: {
+    label: "API to data path",
+    description:
+      "A readable path for discussing how panning keeps nearby dependencies in view.",
+    document: {
+      nodes: [
+        createGraphNode("endpoint-orders", "Endpoint", "GET /api/orders/{id}", {
+          x: 80,
+          y: 150,
+        }),
+        createGraphNode("orders-controller", "Controller", "OrdersController", {
+          x: 330,
+          y: 80,
+        }),
+        createGraphNode("order-service", "Service", "OrderService.GetById", {
+          x: 340,
+          y: 230,
+        }),
+        createGraphNode("pricing-client", "Client", "PricingClient", {
+          x: 620,
+          y: 60,
+        }),
+        createGraphNode("order-repository", "Repository", "OrderRepository", {
+          x: 630,
+          y: 220,
+        }),
+        createGraphNode("orders-table", "Table", "orders table", {
+          x: 910,
+          y: 220,
+        }),
+        createGraphNode("audit-log", "Table", "audit log", { x: 910, y: 360 }),
+      ],
+      edges: [
+        createGraphEdge("e1", "endpoint-orders", "orders-controller", true),
+        createGraphEdge("e2", "orders-controller", "order-service"),
+        createGraphEdge("e3", "order-service", "pricing-client"),
+        createGraphEdge("e4", "order-service", "order-repository", true),
+        createGraphEdge("e5", "order-repository", "orders-table"),
+        createGraphEdge("e6", "order-service", "audit-log"),
+      ],
     },
-    data: { label: node.displayName ?? node.id ?? node.type },
-    selected: node.id === selectedNodeId,
-    style:
-      node.id === selectedNodeId
-        ? { ...defaultNodeStyle, ...selectedNodeStyle }
-        : defaultNodeStyle,
-  }));
-}
+  },
+  DenseWorkspace: {
+    label: "Cross-project workspace",
+    description:
+      "A denser graph for reviewing legibility when navigation moves between clusters.",
+    document: {
+      nodes: [
+        createGraphNode("api-gateway", "Gateway", "ApiGateway", {
+          x: 80,
+          y: 120,
+        }),
+        createGraphNode("orders-api", "Api", "Orders API", { x: 260, y: 40 }),
+        createGraphNode("billing-api", "Api", "Billing API", {
+          x: 260,
+          y: 220,
+        }),
+        createGraphNode("orders-core", "Project", "Orders.Core", {
+          x: 520,
+          y: 20,
+        }),
+        createGraphNode("orders-data", "Project", "Orders.Data", {
+          x: 520,
+          y: 170,
+        }),
+        createGraphNode("billing-core", "Project", "Billing.Core", {
+          x: 520,
+          y: 330,
+        }),
+        createGraphNode("identity-sdk", "Library", "Identity SDK", {
+          x: 800,
+          y: 10,
+        }),
+        createGraphNode("sql-cluster", "Database", "SQL Cluster", {
+          x: 820,
+          y: 180,
+        }),
+        createGraphNode("event-bus", "Queue", "Event Bus", { x: 800, y: 340 }),
+        createGraphNode("warehouse-job", "Worker", "Warehouse Sync", {
+          x: 1080,
+          y: 120,
+        }),
+        createGraphNode("reporting-ui", "Ui", "Reporting UI", {
+          x: 1080,
+          y: 290,
+        }),
+        createGraphNode("alerts-worker", "Worker", "Alerts Worker", {
+          x: 1320,
+          y: 220,
+        }),
+      ],
+      edges: [
+        createGraphEdge("d1", "api-gateway", "orders-api", true),
+        createGraphEdge("d2", "api-gateway", "billing-api"),
+        createGraphEdge("d3", "orders-api", "orders-core"),
+        createGraphEdge("d4", "orders-api", "orders-data"),
+        createGraphEdge("d5", "billing-api", "billing-core"),
+        createGraphEdge("d6", "orders-core", "identity-sdk"),
+        createGraphEdge("d7", "orders-data", "sql-cluster", true),
+        createGraphEdge("d8", "billing-core", "event-bus"),
+        createGraphEdge("d9", "event-bus", "warehouse-job"),
+        createGraphEdge("d10", "sql-cluster", "warehouse-job"),
+        createGraphEdge("d11", "warehouse-job", "reporting-ui"),
+        createGraphEdge("d12", "event-bus", "alerts-worker", true),
+        createGraphEdge("d13", "reporting-ui", "alerts-worker"),
+      ],
+    },
+  },
+};
 
-function createEdges(scene: GraphScene, edgeStyle: GraphEdgeStyle): Edge[] {
-  return (scenes[scene].document.edges ?? []).map((edge) => ({
-    id: edge.id ?? `${edge.sourceId}-${edge.targetId}`,
-    source: edge.sourceId,
-    target: edge.targetId,
-    type: edgeStyle,
-    animated: edge.metadata?.animated === "true",
-    style: { stroke: "#6f7f86", strokeWidth: 1.5 },
-  }));
-}
+const framingLabels: Record<DependencyGraphInitialFraming, string> = {
+  fitView: "Fit view overview",
+  wide: "Wide canvas framing",
+  zoomedIn: "Zoomed detail framing",
+};
+
+const edgeStyleLabels: Record<DependencyGraphEdgeStyle, string> = {
+  default: "Bezier flow",
+  straight: "Straight lines",
+  step: "Step lines",
+  smoothstep: "Smooth step lines",
+};
 
 function GraphNavigationStory({
   scene,
-  framing,
+  initialFraming,
   edgeStyle,
   selectedNodeId,
   showMiniMap,
@@ -261,7 +223,7 @@ function GraphNavigationStory({
               {sceneDefinition.label}
             </Badge>
             <Badge color="blue" variant="light">
-              {framingLabels[framing]}
+              {framingLabels[initialFraming]}
             </Badge>
             <Badge color="cyan" variant="light">
               {edgeStyleLabels[edgeStyle]}
@@ -285,28 +247,14 @@ function GraphNavigationStory({
             backgroundSize: "24px 24px",
           }}
         >
-          <ReactFlow
-            nodes={createNodes(scene, selectedNodeId)}
-            edges={createEdges(scene, edgeStyle)}
-            fitView={framing === "FitView"}
-            fitViewOptions={{ padding: 0.18 }}
-            defaultViewport={defaultViewports[framing]}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            panOnDrag={false}
-            zoomOnDoubleClick={false}
-            zoomOnPinch={false}
-            zoomOnScroll={false}
-            preventScrolling={false}
-            minZoom={0.45}
-            maxZoom={1.5}
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
-            {showMiniMap ? <MiniMap pannable zoomable /> : null}
-            {showControls ? <Controls showInteractive={false} /> : null}
-          </ReactFlow>
+          <DependencyGraph
+            document={sceneDefinition.document}
+            selectedNodeId={selectedNodeId}
+            initialFraming={initialFraming}
+            edgeStyle={edgeStyle}
+            showMiniMap={showMiniMap}
+            showControls={showControls}
+          />
         </Paper>
       </Stack>
     </Paper>
@@ -318,7 +266,7 @@ const meta = {
   component: GraphNavigationStory,
   args: {
     scene: "ServicePath",
-    framing: "FitView",
+    initialFraming: "fitView",
     edgeStyle: "default",
     selectedNodeId: undefined,
     showMiniMap: true,
@@ -329,7 +277,7 @@ const meta = {
       control: { type: "radio" },
       options: Object.keys(scenes),
     },
-    framing: {
+    initialFraming: {
       control: { type: "radio" },
       options: Object.keys(framingLabels),
     },
@@ -351,7 +299,7 @@ export const Overview: Story = {};
 
 export const ZoomedInSelectionRetained: Story = {
   args: {
-    framing: "ZoomedIn",
+    initialFraming: "zoomedIn",
     edgeStyle: "straight",
     selectedNodeId: "order-repository",
   },
@@ -360,7 +308,7 @@ export const ZoomedInSelectionRetained: Story = {
 export const DenseWorkspace: Story = {
   args: {
     scene: "DenseWorkspace",
-    framing: "Wide",
+    initialFraming: "wide",
     edgeStyle: "step",
     selectedNodeId: "warehouse-job",
   },
