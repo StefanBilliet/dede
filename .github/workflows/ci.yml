@@ -26,5 +26,8 @@ jobs:
       - name: Build
         run: dotnet build DogEatDog.DependencyExplorer.sln --configuration Release --no-restore
 
-      - name: Test
-        run: dotnet test DogEatDog.DependencyExplorer.sln --configuration Release --no-build
+      - name: Test unit tests
+        run: dotnet test tests/DogEatDog.DependencyExplorer.UnitTests/DogEatDog.DependencyExplorer.UnitTests.csproj --configuration Release --no-build
+
+      - name: Test integration tests
+        run: dotnet test tests/DogEatDog.DependencyExplorer.IntegrationTests/DogEatDog.DependencyExplorer.IntegrationTests.csproj --configuration Release --no-build
