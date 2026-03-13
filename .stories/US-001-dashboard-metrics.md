@@ -1,5 +1,7 @@
 ## US-001 Dashboard Metrics
 
+Status: Complete
+
 ### User Story
 As a developer using dede,
 I want a dashboard showing key counts,
@@ -13,3 +15,5 @@ so that I can quickly understand the solution's shape.
 
 ### Notes
 - Metrics are read-only in this story.
+- The React UI currently derives metrics from the full loaded graph document, so the design supports whole-solution counts independent of filtered views.
+- The filtered/alternate graph-view nuance is not yet demonstrated end-to-end in the React UI because those views are not implemented there yet.
