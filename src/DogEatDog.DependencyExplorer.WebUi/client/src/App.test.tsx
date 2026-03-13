@@ -18,6 +18,16 @@ async function expectMetricValue(label: string, value: string) {
   expect(await within(metric).findByText(value)).toBeInTheDocument();
 }
 
+function createGraphNode(id: string, type: string) {
+  return {
+    id,
+    type,
+    displayName: `${type} ${id}`,
+    certainty: "Exact",
+    metadata: {},
+  };
+}
+
 function renderWithProviders(ui: ReactNode) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -35,20 +45,39 @@ function renderWithProviders(ui: ReactNode) {
 }
 
 describe("App", () => {
-  test("WHEN graph loads with no dashboard node types THEN it shows 0 for every dashboard metric", async () => {
+  test.each([
+    {
+      name: "WHEN graph loads with no dashboard node types THEN it shows 0 for every dashboard metric",
+      document: graphDocumentFactory.build(),
+      expectedValue: "0",
+    },
+    {
+      name: "WHEN graph loads with dashboard node types THEN it shows their counts for every dashboard metric",
+      document: graphDocumentFactory.build({
+        nodes: [
+          createGraphNode("endpoint-1", "Endpoint"),
+          createGraphNode("controller-1", "Controller"),
+          createGraphNode("service-1", "Service"),
+          createGraphNode("repository-1", "Repository"),
+          createGraphNode("entity-1", "Entity"),
+        ],
+      }),
+      expectedValue: "1",
+    },
+  ])("$name", async ({ document, expectedValue }) => {
     server.use(
       http.get("/api/graph", () =>
-        HttpResponse.json(graphDocumentFactory.build()),
+        HttpResponse.json(document),
       ),
     );
 
     renderWithProviders(<App />);
 
-    await expectMetricValue("Endpoints", "0");
-    await expectMetricValue("Controllers", "0");
-    await expectMetricValue("Services", "0");
-    await expectMetricValue("Repositories", "0");
-    await expectMetricValue("EF Core entities", "0");
+    await expectMetricValue("Endpoints", expectedValue);
+    await expectMetricValue("Controllers", expectedValue);
+    await expectMetricValue("Services", expectedValue);
+    await expectMetricValue("Repositories", expectedValue);
+    await expectMetricValue("EF Core entities", expectedValue);
   });
 
   test("WHEN graph loading fails THEN it shows unavailable values for every dashboard metric", async () => {
