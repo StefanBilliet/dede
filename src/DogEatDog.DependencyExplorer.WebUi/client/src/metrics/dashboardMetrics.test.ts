@@ -1,8 +1,8 @@
 import {
   createDashboardMetrics,
   createUnavailableMetrics,
-  type GraphDocument,
 } from "./dashboardMetrics";
+import type { GraphDocument } from "../types/graph";
 
 function createGraphDocument(nodeTypes: string[]): GraphDocument {
   return {
@@ -25,11 +25,11 @@ describe("dashboardMetrics", () => {
     const metrics = createDashboardMetrics(document);
 
     expect(metrics).toEqual([
-      { label: "Endpoints", value: 2 },
-      { label: "Controllers", value: 1 },
-      { label: "Services", value: 1 },
-      { label: "Repositories", value: 1 },
-      { label: "EF Core entities", value: 2 },
+      { id: "endpoints", label: "Endpoints", value: 2 },
+      { id: "controllers", label: "Controllers", value: 1 },
+      { id: "services", label: "Services", value: 1 },
+      { id: "repositories", label: "Repositories", value: 1 },
+      { id: "entities", label: "EF Core entities", value: 2 },
     ]);
   });
 
@@ -39,21 +39,21 @@ describe("dashboardMetrics", () => {
     const metrics = createDashboardMetrics(document);
 
     expect(metrics).toEqual([
-      { label: "Endpoints", value: 0 },
-      { label: "Controllers", value: 0 },
-      { label: "Services", value: 0 },
-      { label: "Repositories", value: 0 },
-      { label: "EF Core entities", value: 0 },
+      { id: "endpoints", label: "Endpoints", value: 0 },
+      { id: "controllers", label: "Controllers", value: 0 },
+      { id: "services", label: "Services", value: 0 },
+      { id: "repositories", label: "Repositories", value: 0 },
+      { id: "entities", label: "EF Core entities", value: 0 },
     ]);
   });
 
   test("WHEN metrics are unavailable THEN it returns placeholder values", () => {
     expect(createUnavailableMetrics()).toEqual([
-      { label: "Endpoints", value: "-" },
-      { label: "Controllers", value: "-" },
-      { label: "Services", value: "-" },
-      { label: "Repositories", value: "-" },
-      { label: "EF Core entities", value: "-" },
+      { id: "endpoints", label: "Endpoints", value: "-" },
+      { id: "controllers", label: "Controllers", value: "-" },
+      { id: "services", label: "Services", value: "-" },
+      { id: "repositories", label: "Repositories", value: "-" },
+      { id: "entities", label: "EF Core entities", value: "-" },
     ]);
   });
 });

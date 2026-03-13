@@ -4,10 +4,10 @@ import { Background, Controls, MiniMap, ReactFlow } from "reactflow";
 import {
   createDashboardMetrics,
   createUnavailableMetrics,
-  type GraphDocument,
 } from "./metrics/dashboardMetrics";
 import "reactflow/dist/style.css";
 import { Metrics } from "./metrics/metrics.tsx";
+import type { GraphDocument } from "./types/graph";
 
 const nodes = [
   {

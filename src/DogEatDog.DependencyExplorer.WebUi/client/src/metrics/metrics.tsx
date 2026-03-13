@@ -6,11 +6,11 @@ export const Metrics: React.FC<{ metrics: DashboardMetric[] }> = ({ metrics }) =
   return (
     <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }} spacing="md">
       {metrics.map((metric) => {
-        const titleId = `metric-${metric.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+        const titleId = `metric-${metric.id}`;
 
         return (
           <Paper
-            key={metric.label}
+            key={metric.id}
             shadow="sm"
             radius="lg"
             withBorder
