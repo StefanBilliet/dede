@@ -1,14 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Orders.Core;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Orders.Data;
-
-[Table("orders")]
-public sealed class Order
-{
-    public int Id { get; init; }
-}
 
 public sealed class OrdersDbContext : DbContext
 {
